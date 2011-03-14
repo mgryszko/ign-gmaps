@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>IGN-Google Maps Jasmine Test Runner</title>
+    <link rel="stylesheet" type="text/css" href="lib/jasmine.css">
+    <script src="lib/prototype.js"></script>
+    <script src="lib/jasmine.js"></script>
+    <script src="lib/jasmine-ext.js"></script>
+    <script src="lib/jasmine-html.js"></script>
+
+    <script src="http://maps.google.com/maps/api/js?sensor=true"></script>
+    <script src="../lib/proj4js.js"></script>
+    <script src="../src/ign-gmaps.js"></script>
+
+    <script src="unit/MatchersSpec.js"></script>
+    <script src="unit/IgnProjectionSpec.js"></script>
+    <script src="unit/IgnMapOptionsSpec.js"></script>
+    <script src="unit/IgnMapFactorySpec.js"></script>
+
+    <script src="unit/CoordinateConverterSpec.js"></script>
+    <script src="integration/IgnProjectionSpec.js"></script>    
+</head>
+<body>
+
+<script>
+    jasmine.getEnv().addReporter(new jasmine.TrivialReporter())
+    jasmine.getEnv().execute()
+</script>
+</body>
+</html>
