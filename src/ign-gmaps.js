@@ -67,7 +67,7 @@ function IgnProjection(config) {
     }
 }
 
-var ignMaps = {
+var IGN_MAPS = {
     TOPO_1000: "mapa_millon",
     TOPO_200: "mapa_mtn200",
     TOPO_50: "mapa_mtn50",
@@ -76,7 +76,7 @@ var ignMaps = {
 
 function IgnMapOptions(config) {
     this.minZoom = 0
-    this.maxZoom = config.ignMapsForZooms.length - 1
+    this.maxZoom = config.ignMaps.length - 1
 
     this.tileSize = new google.maps.Size(TILE_SIZE_PX, TILE_SIZE_PX)
     this.isPng = false
@@ -93,7 +93,7 @@ function IgnMapOptions(config) {
     }
     
     this.getTileUrl = function(tileCoord, zoom) {
-        var mapType = config.ignMapsForZooms[zoom]
+        var mapType = config.ignMaps[zoom]
         var scale = config.originTileScale * 1000 >> zoom
         var tileIgnCoord = {
             x: originTileIgnXCoordForZoom(zoom) + tileCoord.x,

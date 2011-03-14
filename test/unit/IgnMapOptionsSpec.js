@@ -8,7 +8,7 @@ describe("IgnMapOptions", function() {
 
     context("for each configuration", function () {
         var dummyConfig = {
-            originTileScale: 0, utmZone: 0, originTileIgnCoord: {}, ignMapsForZooms: []
+            originTileScale: 0, utmZone: 0, originTileIgnCoord: {}, ignMaps: []
         }
         var mapType = new IgnMapOptions(dummyConfig)
 
@@ -34,20 +34,20 @@ describe("IgnMapOptions", function() {
             context("the most upper left pixel of the origin tile corresponds to the Google Maps world origin", function() {
                 var originTileIgnCoord = {x: 2, y: 74}
 
-                context("is configured with map types for every zoom level", function () {
-                    var ignMapsForZooms = [ignMaps.TOPO_1000, ignMaps.TOPO_1000,
-                        ignMaps.TOPO_200, ignMaps.TOPO_200,
-                        ignMaps.TOPO_50, ignMaps.TOPO_50,
-                        ignMaps.TOPO_25, ignMaps.TOPO_25, ignMaps.TOPO_25]
+                context("is configured with an IGN map type for every zoom level", function () {
+                    var ignMaps = [IGN_MAPS.TOPO_1000, IGN_MAPS.TOPO_1000,
+                        IGN_MAPS.TOPO_200, IGN_MAPS.TOPO_200,
+                        IGN_MAPS.TOPO_50, IGN_MAPS.TOPO_50,
+                        IGN_MAPS.TOPO_25, IGN_MAPS.TOPO_25, IGN_MAPS.TOPO_25]
                     var mapOptions = new IgnMapOptions({
                         originTileScale: originTileScale,
                         utmZone: utmZone,
                         originTileIgnCoord: originTileIgnCoord,
-                        ignMapsForZooms: ignMapsForZooms
+                        ignMaps: ignMaps
                     })
 
                     it("has a maximum zoom level", function() {
-                        var expMaxZoom = ignMapsForZooms.length - 1
+                        var expMaxZoom = ignMaps.length - 1
                         
                         expect(mapOptions.maxZoom).toEqual(expMaxZoom)
                     })
@@ -55,7 +55,7 @@ describe("IgnMapOptions", function() {
                     context("on that zoom level", function() {
                         var tileScales = [256, 128, 64, 32, 16, 8, 4, 2, 1]
 
-                        $R(0, ignMapsForZooms.length - 1).each(function(zoom) {
+                        $R(0, ignMaps.length - 1).each(function(zoom) {
                             it("creates the tile URL for the Google Maps world origin", function() {
                                 var tileIgnCoord = [{i: 2, j: 74}, {i: 4, j: 149}, {i: 8, j: 299}, {i: 16, j: 599},
                                     {i: 32, j: 1199}, {i: 64, j: 2399}, {i: 128, j: 4799}, {i: 256, j: 9599},
@@ -65,7 +65,7 @@ describe("IgnMapOptions", function() {
                                 var url = mapOptions.getTileUrl(tileCoord, zoom)
 
                                 expect(url).toStartWith("http://ts0.iberpix.ign.es/tileserver/")
-                                expect(url).toContain("n=" + ignMapsForZooms[zoom])
+                                expect(url).toContain("n=" + ignMaps[zoom])
                                 expect(url).toContain("z=" + utmZone)
                                 expect(url).toContain("r=" + (tileScales[zoom] * 1000))
                                 expect(url).toContain("i=" + tileIgnCoord[zoom].i)
