@@ -23,12 +23,12 @@ describe("IgnMapFactory", function() {
     })
 
     it("creates a IGN map type configured with projection", function () {
-        var dummyOriginTileScale = 0
-        var dummyUtmZone = 0
-        var dummyOriginTileIgnCoord = {}
-        var dummyMapTypesForZooms = []
+        var dummyConfig = {
+            originTileScale: 0, utmZone: 0, originTileIgnCoord: {}, ignMapsForZooms: []
+        }
 
-        var mapType = mapFactory.createMapType(dummyOriginTileScale, dummyUtmZone, dummyOriginTileIgnCoord, dummyMapTypesForZooms)
+        var mapType = mapFactory.createMapType(dummyConfig)
+        
         expect(mapType.options).toBeInstanceOf(IgnMapOptions)
         expect(mapType.projection).toBeInstanceOf(IgnProjection)
     })

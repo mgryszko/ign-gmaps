@@ -7,11 +7,10 @@ describe("IgnMapOptions", function() {
     })
 
     context("for each configuration", function () {
-        var dummyOriginTileScale = 0
-        var dummyUtmZone = 0
-        var dummyOriginTileIgnCoord = {}
-        var dummyIgnMapsForZooms = []
-        var mapType = new IgnMapOptions(dummyOriginTileScale, dummyUtmZone, dummyOriginTileIgnCoord, dummyIgnMapsForZooms)
+        var dummyConfig = {
+            originTileScale: 0, utmZone: 0, originTileIgnCoord: {}, ignMapsForZooms: []
+        }
+        var mapType = new IgnMapOptions(dummyConfig)
 
         it("has a minimum zoom level equal to the base zoom level", function() {
             expect(mapType.minZoom).toEqual(0)
@@ -40,7 +39,13 @@ describe("IgnMapOptions", function() {
                         ignMaps.TOPO_200, ignMaps.TOPO_200,
                         ignMaps.TOPO_50, ignMaps.TOPO_50,
                         ignMaps.TOPO_25, ignMaps.TOPO_25, ignMaps.TOPO_25]
-                    var mapType = new IgnMapOptions(originTileScale, utmZone, originTileIgnCoord, ignMapsForZooms)
+                    // TODO rename to mapOptions
+                    var mapType = new IgnMapOptions({
+                        originTileScale: originTileScale,
+                        utmZone: utmZone,
+                        originTileIgnCoord: originTileIgnCoord,
+                        ignMapsForZooms: ignMapsForZooms
+                    })
 
                     it("has a maximum zoom level", function() {
                         var expMaxZoom = ignMapsForZooms.length - 1
@@ -59,6 +64,7 @@ describe("IgnMapOptions", function() {
 
                                 var url = mapType.getTileUrl(tileCoord, zoom)
 
+                                // TODO refactor expects above to a separate method
                                 expect(url).toStartWith("http://ts0.iberpix.ign.es/tileserver/")
                                 expect(url).toContain("n=" + ignMapsForZooms[zoom])
                                 expect(url).toContain("z=" + utmZone)

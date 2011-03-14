@@ -40,28 +40,27 @@ var coordConverterFactory = function() {
     }
 }()
 
-// TODO configuration as object
-function IgnProjection(originTileScale, utmZone, originTileIgnCoord) {
-    var coordConverter = coordConverterFactory.createConverter(utmZone)
+function IgnProjection(config) {
+    var coordConverter = coordConverterFactory.createConverter(config.utmZone)
 
     var originUtm = {
-        x: originTileIgnCoord.x * originTileScale * TILE_SIZE_PX,
-        y: (originTileIgnCoord.y + 1) * originTileScale * TILE_SIZE_PX
+        x: config.originTileIgnCoord.x * config.originTileScale * TILE_SIZE_PX,
+        y: (config.originTileIgnCoord.y + 1) * config.originTileScale * TILE_SIZE_PX
     }
 
     this.fromLatLngToPoint = function(latLng) {
         var utm = coordConverter.latLngToUtm({lat: latLng.lat(), lng: latLng.lng()})
         var worldPoint = {
-            x: (utm.x - originUtm.x) / originTileScale,
-            y: (originUtm.y - utm.y) / originTileScale
+            x: (utm.x - originUtm.x) / config.originTileScale,
+            y: (originUtm.y - utm.y) / config.originTileScale
         }
         return new google.maps.Point(worldPoint.x, worldPoint.y)
     }
 
     this.fromPointToLatLng = function(point) {
         var utm = {
-            x: point.x * originTileScale + originUtm.x,
-            y: originUtm.y - point.y * originTileScale
+            x: point.x * config.originTileScale + originUtm.x,
+            y: originUtm.y - point.y * config.originTileScale
         }
         var latLng = coordConverter.utmToLatLng(utm)
         return new google.maps.LatLng(latLng.lat, latLng.lng);
@@ -75,19 +74,18 @@ var ignMaps = {
     TOPO_25: "mapa_mtn25"
 }
 
-// TODO configuration as object
-function IgnMapOptions(originTileScale, utmZone, originTileIgnCoord, ignMapsForZooms) {
+function IgnMapOptions(config) {
     this.minZoom = 0
-    this.maxZoom = ignMapsForZooms.length - 1
+    this.maxZoom = config.ignMapsForZooms.length - 1
 
     this.tileSize = new google.maps.Size(TILE_SIZE_PX, TILE_SIZE_PX)
     this.isPng = false
 
     function originTileIgnXCoordForZoom(zoom) {
-        return originTileIgnCoord.x << zoom
+        return config.originTileIgnCoord.x << zoom
     }
     function originTileIgnYCoordForZoom(zoom) {
-        var y = originTileIgnCoord.y
+        var y = config.originTileIgnCoord.y
         for (var i = 1; i <= zoom; i++) {
             y = y * 2 + 1
         }
@@ -95,8 +93,8 @@ function IgnMapOptions(originTileScale, utmZone, originTileIgnCoord, ignMapsForZ
     }
     
     this.getTileUrl = function(tileCoord, zoom) {
-        var mapType = ignMapsForZooms[zoom]
-        var scale = originTileScale * 1000 >> zoom
+        var mapType = config.ignMapsForZooms[zoom]
+        var scale = config.originTileScale * 1000 >> zoom
         var tileIgnCoord = {
             x: originTileIgnXCoordForZoom(zoom) + tileCoord.x,
             y: originTileIgnYCoordForZoom(zoom) - tileCoord.y
@@ -104,7 +102,7 @@ function IgnMapOptions(originTileScale, utmZone, originTileIgnCoord, ignMapsForZ
 
         return "http://ts0.iberpix.ign.es/tileserver/" +
                 "n=" + mapType +
-                ";z=" + utmZone +
+                ";z=" + config.utmZone +
                 ";r=" + scale +
                 ";i=" + tileIgnCoord.x +
                 ";j=" + tileIgnCoord.y +
@@ -113,11 +111,10 @@ function IgnMapOptions(originTileScale, utmZone, originTileIgnCoord, ignMapsForZ
 }
 
 function IgnMapFactory() {
-    // TODO configuration as object
-    this.createMapType = function(originTileScale, utmZone, originTileIgnCoord, ignMapsForZooms) {
-        var mapOptions = new IgnMapOptions(originTileScale, utmZone, originTileIgnCoord, ignMapsForZooms)
+    this.createMapType = function(config) {
+        var mapOptions = new IgnMapOptions(config)
         var mapType = new google.maps.ImageMapType(mapOptions)
-        mapType.projection = new IgnProjection(originTileScale, utmZone, originTileIgnCoord)
+        mapType.projection = new IgnProjection(config)
         
         return mapType
     }

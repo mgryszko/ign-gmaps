@@ -15,7 +15,11 @@ describe("IgnProjection with the default lat-lng to UTM converter", function() {
             context("the most upper left pixel of the origin tile corresponds to the Google Maps world origin", function() {
                 var originTileIgnCoord = {x: 2, y: 74}
 
-                var projection = new IgnProjection(originTileScale, utmZone, originTileIgnCoord)
+                var projection = new IgnProjection({
+                    originTileScale: originTileScale,
+                    utmZone: utmZone,
+                    originTileIgnCoord: originTileIgnCoord
+                })
 
                 it("maps a lan-lng east and south from the origin tile to a world point with positive coordinates", function() {
                     var point = projection.fromLatLngToPoint(new google.maps.LatLng(43.0, -3.0))

@@ -23,7 +23,11 @@ describe("IgnProjection", function() {
                 beforeEach(function() {
                     converter = jasmine.createSpyObj(CoordinateConverter, ["latLngToUtm", "utmToLatLng"])
                     spyOn(coordConverterFactory, "createConverter").andReturn(converter)
-                    projection = new IgnProjection(originTileScale, utmZone, originTileIgnCoord)
+                    projection = new IgnProjection({
+                        originTileScale: originTileScale,
+                        utmZone: utmZone,
+                        originTileIgnCoord: originTileIgnCoord
+                    })
                     expect(coordConverterFactory.createConverter).toHaveBeenCalledWith(utmZone)
                 })
 
