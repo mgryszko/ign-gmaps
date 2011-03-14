@@ -39,8 +39,7 @@ describe("IgnMapOptions", function() {
                         ignMaps.TOPO_200, ignMaps.TOPO_200,
                         ignMaps.TOPO_50, ignMaps.TOPO_50,
                         ignMaps.TOPO_25, ignMaps.TOPO_25, ignMaps.TOPO_25]
-                    // TODO rename to mapOptions
-                    var mapType = new IgnMapOptions({
+                    var mapOptions = new IgnMapOptions({
                         originTileScale: originTileScale,
                         utmZone: utmZone,
                         originTileIgnCoord: originTileIgnCoord,
@@ -49,7 +48,8 @@ describe("IgnMapOptions", function() {
 
                     it("has a maximum zoom level", function() {
                         var expMaxZoom = ignMapsForZooms.length - 1
-                        expect(mapType.maxZoom).toEqual(expMaxZoom)
+                        
+                        expect(mapOptions.maxZoom).toEqual(expMaxZoom)
                     })
 
                     context("on that zoom level", function() {
@@ -62,9 +62,8 @@ describe("IgnMapOptions", function() {
                                     {i: 512, j: 19199}]
                                 var tileCoord = new google.maps.Point(0, 0)
 
-                                var url = mapType.getTileUrl(tileCoord, zoom)
+                                var url = mapOptions.getTileUrl(tileCoord, zoom)
 
-                                // TODO refactor expects above to a separate method
                                 expect(url).toStartWith("http://ts0.iberpix.ign.es/tileserver/")
                                 expect(url).toContain("n=" + ignMapsForZooms[zoom])
                                 expect(url).toContain("z=" + utmZone)
