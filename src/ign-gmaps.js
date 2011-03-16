@@ -96,10 +96,6 @@ function IgnMapOptions(config) {
     var coordConverter = coordConverterFactory.createConverter(utmZone)
 
     var originTileIgnCoord = latLngToTileIgnCoord(originTileLatLng)
-    var originUtm = {
-        x: originTileIgnCoord.x * tileScaleForBaseZoom * TILE_SIZE_PX,
-        y: (originTileIgnCoord.y + 1) * tileScaleForBaseZoom * TILE_SIZE_PX
-    }
 
     function latLngToTileIgnCoord(latLng) {
         var utm = coordConverter.latLngToUtm(latLng)
