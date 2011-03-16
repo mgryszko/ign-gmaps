@@ -7,18 +7,18 @@ describe("IgnProjection with the default lat-lng to UTM converter", function() {
     })
 
     context("with tile scale for the base zoom level", function() {
-        var originTileScale = 256
+        var tileScaleForBaseZoom = 256
 
         context("for an UTM zone", function() {
             var utmZone = 30
 
             context("the most upper left pixel of the origin tile corresponds to the Google Maps world origin", function() {
-                var originTileIgnCoord = {x: 2, y: 74}
+                var originTileLatLng = {lat: 44.0, lng: -7.0}
 
                 var projection = new IgnProjection({
-                    originTileScale: originTileScale,
+                    tileScaleForBaseZoom: tileScaleForBaseZoom,
                     utmZone: utmZone,
-                    originTileIgnCoord: originTileIgnCoord
+                    originTileLatLng: originTileLatLng
                 })
 
                 it("maps a lan-lng east and south from the origin tile to a world point with positive coordinates", function() {

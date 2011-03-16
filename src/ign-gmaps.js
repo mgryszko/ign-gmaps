@@ -41,26 +41,39 @@ var coordConverterFactory = function() {
 }()
 
 function IgnProjection(config) {
-    var coordConverter = coordConverterFactory.createConverter(config.utmZone)
+    var utmZone = config.utmZone
+    var originTileLatLng = config.originTileLatLng
+    var tileScaleForBaseZoom = config.tileScaleForBaseZoom
 
+    var coordConverter = coordConverterFactory.createConverter(utmZone)
+
+    var originTileIgnCoord = latLngToTileIgnCoord(originTileLatLng)
     var originUtm = {
-        x: config.originTileIgnCoord.x * config.originTileScale * TILE_SIZE_PX,
-        y: (config.originTileIgnCoord.y + 1) * config.originTileScale * TILE_SIZE_PX
+        x: originTileIgnCoord.x * tileScaleForBaseZoom * TILE_SIZE_PX,
+        y: (originTileIgnCoord.y + 1) * tileScaleForBaseZoom * TILE_SIZE_PX
+    }
+
+    function latLngToTileIgnCoord(latLng) {
+        var utm = coordConverter.latLngToUtm(latLng)
+        return {
+            x: Math.floor(utm.x / (tileScaleForBaseZoom * TILE_SIZE_PX)),
+            y: Math.floor(utm.y / (tileScaleForBaseZoom * TILE_SIZE_PX))
+        }
     }
 
     this.fromLatLngToPoint = function(latLng) {
         var utm = coordConverter.latLngToUtm({lat: latLng.lat(), lng: latLng.lng()})
         var worldPoint = {
-            x: (utm.x - originUtm.x) / config.originTileScale,
-            y: (originUtm.y - utm.y) / config.originTileScale
+            x: (utm.x - originUtm.x) / tileScaleForBaseZoom,
+            y: (originUtm.y - utm.y) / tileScaleForBaseZoom
         }
         return new google.maps.Point(worldPoint.x, worldPoint.y)
     }
 
-    this.fromPointToLatLng = function(point) {
+    this.fromPointToLatLng = function(worldPoint) {
         var utm = {
-            x: point.x * config.originTileScale + originUtm.x,
-            y: originUtm.y - point.y * config.originTileScale
+            x: worldPoint.x * tileScaleForBaseZoom + originUtm.x,
+            y: originUtm.y - worldPoint.y * tileScaleForBaseZoom
         }
         var latLng = coordConverter.utmToLatLng(utm)
         return new google.maps.LatLng(latLng.lat, latLng.lng);
@@ -75,26 +88,48 @@ var IGN_MAPS = {
 }
 
 function IgnMapOptions(config) {
+    var utmZone = config.utmZone
+    var originTileLatLng = config.originTileLatLng
+    var tileScaleForBaseZoom = config.tileScaleForBaseZoom
+    var ignMaps = config.ignMaps
+
+    var coordConverter = coordConverterFactory.createConverter(utmZone)
+
+    var originTileIgnCoord = latLngToTileIgnCoord(originTileLatLng)
+    var originUtm = {
+        x: originTileIgnCoord.x * tileScaleForBaseZoom * TILE_SIZE_PX,
+        y: (originTileIgnCoord.y + 1) * tileScaleForBaseZoom * TILE_SIZE_PX
+    }
+
+    function latLngToTileIgnCoord(latLng) {
+        var utm = coordConverter.latLngToUtm(latLng)
+        return {
+            x: Math.floor(utm.x / (tileScaleForBaseZoom * TILE_SIZE_PX)),
+            y: Math.floor(utm.y / (tileScaleForBaseZoom * TILE_SIZE_PX))
+        }
+    }
+
     this.minZoom = 0
-    this.maxZoom = config.ignMaps.length - 1
+    this.maxZoom = ignMaps.length - 1
 
     this.tileSize = new google.maps.Size(TILE_SIZE_PX, TILE_SIZE_PX)
     this.isPng = false
 
     function originTileIgnXCoordForZoom(zoom) {
-        return config.originTileIgnCoord.x << zoom
+        return originTileIgnCoord.x << zoom
     }
+
     function originTileIgnYCoordForZoom(zoom) {
-        var y = config.originTileIgnCoord.y
+        var y = originTileIgnCoord.y
         for (var i = 1; i <= zoom; i++) {
             y = y * 2 + 1
         }
         return y
     }
-    
+
     this.getTileUrl = function(tileCoord, zoom) {
-        var mapType = config.ignMaps[zoom]
-        var scale = config.originTileScale * 1000 >> zoom
+        var mapType = ignMaps[zoom]
+        var scale = tileScaleForBaseZoom * 1000 >> zoom
         var tileIgnCoord = {
             x: originTileIgnXCoordForZoom(zoom) + tileCoord.x,
             y: originTileIgnYCoordForZoom(zoom) - tileCoord.y
@@ -102,7 +137,7 @@ function IgnMapOptions(config) {
 
         return "http://ts0.iberpix.ign.es/tileserver/" +
                 "n=" + mapType +
-                ";z=" + config.utmZone +
+                ";z=" + utmZone +
                 ";r=" + scale +
                 ";i=" + tileIgnCoord.x +
                 ";j=" + tileIgnCoord.y +
@@ -115,7 +150,7 @@ function IgnMapFactory() {
         var mapOptions = new IgnMapOptions(config)
         var mapType = new google.maps.ImageMapType(mapOptions)
         mapType.projection = new IgnProjection(config)
-        
+
         return mapType
     }
 }
