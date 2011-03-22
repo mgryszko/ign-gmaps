@@ -1,11 +1,19 @@
 var TILE_SIZE_PX = 256
 
+var IGN_MAPS = {
+    TOPO_1000: "mapa_millon",
+    TOPO_200: "mapa_mtn200",
+    TOPO_50: "mapa_mtn50",
+    TOPO_25: "mapa_mtn25"
+}
+
 Proj4js.defs["EPSG:4258"] = "+proj=longlat +ellps=GRS80 +no_defs" //lat/lon with ETRS89 datum
 Proj4js.defs["EPSG:3039"] = "+proj=utm +zone=27 +ellps=GRS80 +units=m +no_defs" //UTM 27N with ETRS89 datum
 Proj4js.defs["EPSG:3040"] = "+proj=utm +zone=28 +ellps=GRS80 +units=m +no_defs" //UTM 28N with ETRS89 datum
 Proj4js.defs["EPSG:3041"] = "+proj=utm +zone=29 +ellps=GRS80 +units=m +no_defs" //UTM 29N with ETRS89 datum
 Proj4js.defs["EPSG:3042"] = "+proj=utm +zone=30 +ellps=GRS80 +units=m +no_defs" //UTM 30N with ETRS89 datum
 Proj4js.defs["EPSG:3043"] = "+proj=utm +zone=31 +ellps=GRS80 +units=m +no_defs" //UTM 31N with ETRS89 datum
+
 
 function CoordinateConverter(utmZone) {
     var etrsProjection = new Proj4js.Proj("EPSG:4258")
@@ -32,34 +40,45 @@ function CoordinateConverter(utmZone) {
     }
 }
 
-var coordConverterFactory = function() {
-    return {
-        createConverter: function(utmZone) {
-            return new CoordinateConverter(utmZone)
+CoordinateConverter.createForUtmZone = function(utmZone) {
+    return new CoordinateConverter(utmZone)
+}
+
+
+function IgnTileCalculator(utmZone) {
+    var coordConverter = CoordinateConverter.createForUtmZone(utmZone)
+
+    this.latLngToTileIgnCoord = function(tileScale, latLng) {
+        var utm = coordConverter.latLngToUtm(latLng)
+        return {
+            x: Math.floor(utm.x / (tileScale * TILE_SIZE_PX)),
+            y: Math.floor(utm.y / (tileScale * TILE_SIZE_PX))
         }
     }
-}()
+
+    this.upperLeftPixelUtm = function(tileScale, tileIgnCoord) {
+        return {
+            x: tileIgnCoord.x * tileScale * TILE_SIZE_PX,
+            y: (tileIgnCoord.y + 1) * tileScale * TILE_SIZE_PX
+        }        
+    }
+}
+
+IgnTileCalculator.createForUtmZone = function(utmZone) {
+    return new IgnTileCalculator(utmZone)
+}
 
 function IgnProjection(config) {
     var utmZone = config.utmZone
     var originTileLatLng = config.originTileLatLng
     var tileScaleForBaseZoom = config.tileScaleForBaseZoom
 
-    var coordConverter = coordConverterFactory.createConverter(utmZone)
-
-    var originTileIgnCoord = latLngToTileIgnCoord(originTileLatLng)
-    var originUtm = {
-        x: originTileIgnCoord.x * tileScaleForBaseZoom * TILE_SIZE_PX,
-        y: (originTileIgnCoord.y + 1) * tileScaleForBaseZoom * TILE_SIZE_PX
-    }
-
-    function latLngToTileIgnCoord(latLng) {
-        var utm = coordConverter.latLngToUtm(latLng)
-        return {
-            x: Math.floor(utm.x / (tileScaleForBaseZoom * TILE_SIZE_PX)),
-            y: Math.floor(utm.y / (tileScaleForBaseZoom * TILE_SIZE_PX))
-        }
-    }
+    var coordConverter = CoordinateConverter.createForUtmZone(utmZone)
+    var originUtm = function() {
+        var ignTileCalculator = IgnTileCalculator.createForUtmZone(utmZone)
+        var originTileIgnCoord = ignTileCalculator.latLngToTileIgnCoord(tileScaleForBaseZoom, originTileLatLng)
+        return ignTileCalculator.upperLeftPixelUtm(tileScaleForBaseZoom, originTileIgnCoord)
+    }()
 
     this.fromLatLngToPoint = function(latLng) {
         var utm = coordConverter.latLngToUtm({lat: latLng.lat(), lng: latLng.lng()})
@@ -80,30 +99,14 @@ function IgnProjection(config) {
     }
 }
 
-var IGN_MAPS = {
-    TOPO_1000: "mapa_millon",
-    TOPO_200: "mapa_mtn200",
-    TOPO_50: "mapa_mtn50",
-    TOPO_25: "mapa_mtn25"
-}
-
 function IgnMapOptions(config) {
     var utmZone = config.utmZone
     var originTileLatLng = config.originTileLatLng
     var tileScaleForBaseZoom = config.tileScaleForBaseZoom
     var ignMaps = config.ignMaps
 
-    var coordConverter = coordConverterFactory.createConverter(utmZone)
-
-    var originTileIgnCoord = latLngToTileIgnCoord(originTileLatLng)
-
-    function latLngToTileIgnCoord(latLng) {
-        var utm = coordConverter.latLngToUtm(latLng)
-        return {
-            x: Math.floor(utm.x / (tileScaleForBaseZoom * TILE_SIZE_PX)),
-            y: Math.floor(utm.y / (tileScaleForBaseZoom * TILE_SIZE_PX))
-        }
-    }
+    var ignTileCalculator = IgnTileCalculator.createForUtmZone(utmZone)
+    var originTileIgnCoord = ignTileCalculator.latLngToTileIgnCoord(tileScaleForBaseZoom, originTileLatLng)
 
     this.minZoom = 0
     this.maxZoom = ignMaps.length - 1

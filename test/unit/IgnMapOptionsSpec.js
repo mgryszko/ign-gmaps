@@ -15,14 +15,12 @@ describe("IgnMapOptions", function() {
         var mapOptions
 
         beforeEach(function() {
-            converter = jasmine.createSpyObj(CoordinateConverter, ["latLngToUtm"])
-            spyOn(coordConverterFactory, "createConverter").andReturn(converter)
-            converter.latLngToUtm.andReturn({x: 0, y: 0})
+            // TODO duplicated code
+            var ignTileCalculator = jasmine.createSpyObj(IgnTileCalculator, ["latLngToTileIgnCoord"])
+            spyOn(IgnTileCalculator, "createForUtmZone").andReturn(ignTileCalculator)
+            ignTileCalculator.latLngToTileIgnCoord.andReturn({x: 2, y: 74})
 
             mapOptions = new IgnMapOptions(dummyConfig)
-
-            expect(coordConverterFactory.createConverter).toHaveBeenCalledWith(dummyUtmZone)
-            expect(converter.latLngToUtm).toHaveBeenCalledWith(dummyOriginTileLatLng)
         })
 
         it("has a minimum zoom level equal to the base zoom level", function() {
@@ -55,9 +53,10 @@ describe("IgnMapOptions", function() {
                     var mapOptions
 
                     beforeEach(function() {
-                        converter = jasmine.createSpyObj(CoordinateConverter, ["latLngToUtm"])
-                        spyOn(coordConverterFactory, "createConverter").andReturn(converter)
-                        converter.latLngToUtm.andReturn({x: 179294.18, y: 4879655.84})
+                        // TODO duplicated code
+                        var ignTileCalculator = jasmine.createSpyObj(IgnTileCalculator, ["latLngToTileIgnCoord"])
+                        spyOn(IgnTileCalculator, "createForUtmZone").andReturn(ignTileCalculator)
+                        ignTileCalculator.latLngToTileIgnCoord.andReturn({x: 2, y: 74})
 
                         mapOptions = new IgnMapOptions({
                             tileScaleForBaseZoom: tileScaleForBaseZoom,
@@ -66,8 +65,8 @@ describe("IgnMapOptions", function() {
                             ignMaps: ignMaps
                         })
                         
-                        expect(coordConverterFactory.createConverter).toHaveBeenCalledWith(utmZone)
-                        expect(converter.latLngToUtm).toHaveBeenCalledWith(originTileLatLng)
+                        expect(IgnTileCalculator.createForUtmZone).toHaveBeenCalledWith(utmZone)
+                        expect(ignTileCalculator.latLngToTileIgnCoord).toHaveBeenCalledWith(tileScaleForBaseZoom, originTileLatLng)
                     })
 
                     it("has a maximum zoom level", function() {
