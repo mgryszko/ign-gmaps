@@ -15,9 +15,7 @@ describe("IgnMapOptions", function() {
         var mapOptions
 
         beforeEach(function() {
-            // TODO duplicated code
-            var ignTileCalculator = jasmine.createSpyObj(IgnTileCalculator, ["latLngToTileIgnCoord"])
-            spyOn(IgnTileCalculator, "createForUtmZone").andReturn(ignTileCalculator)
+            var ignTileCalculator = IgnTileCalculator.createSpyForUtmZone()
             ignTileCalculator.latLngToTileIgnCoord.andReturn({x: 2, y: 74})
 
             mapOptions = new IgnMapOptions(dummyConfig)
@@ -53,9 +51,7 @@ describe("IgnMapOptions", function() {
                     var mapOptions
 
                     beforeEach(function() {
-                        // TODO duplicated code
-                        var ignTileCalculator = jasmine.createSpyObj(IgnTileCalculator, ["latLngToTileIgnCoord"])
-                        spyOn(IgnTileCalculator, "createForUtmZone").andReturn(ignTileCalculator)
+                        var ignTileCalculator = IgnTileCalculator.createSpyForUtmZone()
                         ignTileCalculator.latLngToTileIgnCoord.andReturn({x: 2, y: 74})
 
                         mapOptions = new IgnMapOptions({
@@ -65,7 +61,7 @@ describe("IgnMapOptions", function() {
                             ignMaps: ignMaps
                         })
                         
-                        expect(IgnTileCalculator.createForUtmZone).toHaveBeenCalledWith(utmZone)
+                        IgnTileCalculator.expectSpyCreatedForUtmZone(utmZone)
                         expect(ignTileCalculator.latLngToTileIgnCoord).toHaveBeenCalledWith(tileScaleForBaseZoom, originTileLatLng)
                     })
 

@@ -9,7 +9,7 @@ describe("IgnProjection", function() {
     })
 
     context("with tile scale for the base zoom level", function() {
-        var tileScaleForBaseZoom = 256
+        var tileScale = 256
 
         context("for an UTM zone", function() {
             var utmZone = 30
@@ -21,26 +21,23 @@ describe("IgnProjection", function() {
                 var projection
 
                 beforeEach(function() {
-                    // TODO duplicated code
-                    coordConverter = jasmine.createSpyObj(CoordinateConverter, ["latLngToUtm", "utmToLatLng"])
-                    spyOn(CoordinateConverter, "createForUtmZone").andReturn(coordConverter)
-
-                    // TODO duplicated code
-                    var ignTileCalculator = jasmine.createSpyObj(IgnTileCalculator, ["latLngToTileIgnCoord", "upperLeftPixelUtm"])
-                    spyOn(IgnTileCalculator, "createForUtmZone").andReturn(ignTileCalculator)
-                    ignTileCalculator.latLngToTileIgnCoord.andReturn({x: 2, y: 74})
-                    ignTileCalculator.upperLeftPixelUtm.andReturn({x: 131072, y: 4915200})
+                    coordConverter = CoordinateConverter.createSpyForUtmZone()
+                    var ignTileCalculator = IgnTileCalculator.createSpyForUtmZone()
+                    var originTileIgnCoord = {x: 2, y: 74}
+                    var originTileUpperLeftPixelUtm = {x: 131072, y: 4915200}
+                    ignTileCalculator.latLngToTileIgnCoord.andReturn(originTileIgnCoord)
+                    ignTileCalculator.upperLeftPixelUtm.andReturn(originTileUpperLeftPixelUtm)
 
                     projection = new IgnProjection({
-                        tileScaleForBaseZoom: tileScaleForBaseZoom,
+                        tileScaleForBaseZoom: tileScale,
                         utmZone: utmZone,
                         originTileLatLng: originTileLatLng
                     })
 
-                    // TODO possibly duplicated code
-                    expect(IgnTileCalculator.createForUtmZone).toHaveBeenCalledWith(utmZone)
-                    expect(ignTileCalculator.latLngToTileIgnCoord).toHaveBeenCalledWith(tileScaleForBaseZoom, originTileLatLng)
-                    expect(ignTileCalculator.upperLeftPixelUtm).toHaveBeenCalledWith(tileScaleForBaseZoom, {x: 2, y: 74})
+                    CoordinateConverter.expectSpyCreatedForUtmZone(utmZone)
+                    IgnTileCalculator.expectSpyCreatedForUtmZone(utmZone)
+                    expect(ignTileCalculator.latLngToTileIgnCoord).toHaveBeenCalledWith(tileScale, originTileLatLng)
+                    expect(ignTileCalculator.upperLeftPixelUtm).toHaveBeenCalledWith(tileScale, originTileIgnCoord)
                 })
 
                 it("maps a lan-lng east and south from the origin tile to a world point with positive coordinates", function() {
@@ -74,7 +71,7 @@ describe("IgnProjection", function() {
                 it("1 tile pixel corresponds to 1 world point", function() {
                     var latLng = new gm.LatLng(44.296377, -7.624554)
                     var utm = {x: 131072, y: 4915200}
-                    var utmOnePxAway = {x: utm.x + tileScaleForBaseZoom, y: utm.y + tileScaleForBaseZoom}
+                    var utmOnePxAway = {x: utm.x + tileScale, y: utm.y + tileScale}
 
                     coordConverter.latLngToUtm.andReturn(utm)
                     var worldPoint = projection.fromLatLngToPoint(latLng)
