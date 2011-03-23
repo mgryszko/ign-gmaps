@@ -1,4 +1,5 @@
 var gm = google.maps
+var ign = {}
 
 var TILE_SIZE_PX = 256
 
@@ -16,6 +17,10 @@ Proj4js.defs["EPSG:3041"] = "+proj=utm +zone=29 +ellps=GRS80 +units=m +no_defs" 
 Proj4js.defs["EPSG:3042"] = "+proj=utm +zone=30 +ellps=GRS80 +units=m +no_defs" //UTM 30N with ETRS89 datum
 Proj4js.defs["EPSG:3043"] = "+proj=utm +zone=31 +ellps=GRS80 +units=m +no_defs" //UTM 31N with ETRS89 datum
 
+ign.Utm = function(x, y) {
+    this.x = x
+    this.y = y
+}
 
 function CoordinateConverter(utmZone) {
     var etrsProjection = new Proj4js.Proj("EPSG:4258")
@@ -31,7 +36,7 @@ function CoordinateConverter(utmZone) {
         var point = new Proj4js.Point(latLng.lng(), latLng.lat())
         Proj4js.transform(etrsProjection, utmProjections[utmZone], point)
 
-        return {x: point.x, y: point.y}
+        return new ign.Utm(point.x, point.y)
     }
 
     this.utmToLatLng = function(utm) {

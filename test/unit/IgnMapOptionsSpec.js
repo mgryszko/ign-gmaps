@@ -41,7 +41,7 @@ describe("IgnMapOptions", function() {
             var utmZone = 30
 
             context("the most upper left pixel of the origin tile corresponds to the Google Maps world origin", function() {
-                var originTileLatLng = {lat: 44.0, lng: -7.0}
+                var originTileLatLng = new gm.LatLng(44.0, -7.0)
 
                 context("is configured with an IGN map type for every zoom level", function () {
                     var ignMaps = [IGN_MAPS.TOPO_1000, IGN_MAPS.TOPO_1000,

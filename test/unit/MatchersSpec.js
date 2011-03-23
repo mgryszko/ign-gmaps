@@ -18,14 +18,14 @@ describe("additional matchers", function() {
     })
 
     describe("toEqualToUtmWithDelta matcher", function() {
-        var actual = {actual: {x: 1.0, y: 2.0}}
+        var actual = {actual: new ign.Utm(1.0, 2.0)}
 
         it("matches an UTM coordinate within expected value plus/minus delta range", function() {
-            var expected = {x: 1.001, y: 1.999}
+            var expected = new ign.Utm(1.001, 1.999)
             expect(toEqualToXYWithDelta.call(actual, expected, 0.001)).toBeTruthy()
         })
         it("doesn't match an UTM coordinate outside the expected value plus/minus delta range", function() {
-            var expected = {x: 0.998, y: 2.002}
+            var expected = new ign.Utm(0.998, 2.002)
             expect(toEqualToXYWithDelta.call(actual, expected, 0.001)).toBeFalsy()
         })
 

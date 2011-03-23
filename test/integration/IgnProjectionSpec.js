@@ -24,11 +24,11 @@ describe("IgnProjection with the default lat-lng to UTM converter", function() {
                 it("maps a lan-lng east and south from the origin tile to a world point with positive coordinates", function() {
                     var point = projection.fromLatLngToPoint(new gm.LatLng(43.0, -3.0))
 
-                    expect(point).toEqualToXYWithDelta({x: 1441.125, y: 603.067}, 0.001)
+                    expect(point).toEqualToXYWithDelta(new gm.Point(1441.125, 603.067), 0.001)
                 })
 
                 it("maps a world point with positive coordinates to lat-lng east and south from the origin tile", function() {
-                    var latLng = projection.fromPointToLatLng(new google.maps.Point(1441.125, 603.067))
+                    var latLng = projection.fromPointToLatLng(new gm.Point(1441.125, 603.067))
 
                     expect(latLng).toEqualToLatLngWithDelta(new gm.LatLng(43.0, -3.0), 0.001)
                 })
