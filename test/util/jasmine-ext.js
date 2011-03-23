@@ -10,9 +10,7 @@ function toEqualToXYWithDelta(expected, delta) {
 }
 
 function toEqualToLatLngWithDelta(expected, delta) {
-    var lat = Object.isFunction(this.actual.lat) ? this.actual.lat() : this.actual.lat
-    var lng = Object.isFunction(this.actual.lng) ? this.actual.lng() : this.actual.lng
-
-    return equalsWithDelta(lat, expected.lat, delta) && equalsWithDelta(lng, expected.lng, delta)
+    return equalsWithDelta(this.actual.lat(), expected.lat(), delta) && 
+            equalsWithDelta(this.actual.lng(), expected.lng(), delta)
 }
 

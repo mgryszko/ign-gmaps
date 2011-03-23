@@ -16,7 +16,7 @@ describe("IgnTileCalculator", function() {
         it("converts lat-lng to tile IGN coordinates", function () {
             coordConverter.latLngToUtm.andReturn({x: 179294.18, y: 4879655.84})
             var tileScale = 256
-            var latLng = {lat: 44.0, lng: -7.0}
+            var latLng = new gm.LatLng(44.0, -7.0)
 
             expect(calculator.latLngToTileIgnCoord(tileScale, latLng)).toEqual({x: 2, y: 74})
             expect(coordConverter.latLngToUtm).toHaveBeenCalledWith(latLng)

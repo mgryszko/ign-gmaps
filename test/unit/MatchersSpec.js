@@ -32,18 +32,15 @@ describe("additional matchers", function() {
     })
 
     describe("toEqualToLatLngWithDelta matcher", function() {
-        var latLngAsProperties = {lat: 43.0, lng: -3.0}
-        var latLngAsFunctions = {lat: function() { return 43.0 }, lng: function() { return -3.0 }}
+        var latLng = new gm.LatLng(43.0, -3.0)
 
         it("matches a lat-lng coordinate within expected value plus/minus delta range", function() {
-            var expected = {lat: 43.001, lng: -3.001}
-            expect(toEqualToLatLngWithDelta.call({actual: latLngAsProperties}, expected, 0.001)).toBeTruthy()
-            expect(toEqualToLatLngWithDelta.call({actual: latLngAsFunctions}, expected, 0.001)).toBeTruthy()
+            var expected = new gm.LatLng(43.001, -3.001)
+            expect(toEqualToLatLngWithDelta.call({actual: latLng}, expected, 0.001)).toBeTruthy()
         })
         it("doesn't match a lat-lng coordinate outside the expected value plus/minus delta range", function() {
-            var expected = {lat: 42.998, lng: -2.999}
-            expect(toEqualToLatLngWithDelta.call({actual: latLngAsProperties}, expected, 0.001)).toBeFalsy()
-            expect(toEqualToLatLngWithDelta.call({actual: latLngAsFunctions}, expected, 0.001)).toBeFalsy()
+            var expected = new gm.LatLng(42.998, -2.999)
+            expect(toEqualToLatLngWithDelta.call({actual: latLng}, expected, 0.001)).toBeFalsy()
         })
     })
 })

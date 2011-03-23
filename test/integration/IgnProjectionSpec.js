@@ -13,7 +13,7 @@ describe("IgnProjection with the default lat-lng to UTM converter", function() {
             var utmZone = 30
 
             context("the most upper left pixel of the origin tile corresponds to the Google Maps world origin", function() {
-                var originTileLatLng = {lat: 44.0, lng: -7.0}
+                var originTileLatLng = new gm.LatLng(44.0, -7.0)
 
                 var projection = new IgnProjection({
                     tileScaleForBaseZoom: tileScaleForBaseZoom,
@@ -22,7 +22,7 @@ describe("IgnProjection with the default lat-lng to UTM converter", function() {
                 })
 
                 it("maps a lan-lng east and south from the origin tile to a world point with positive coordinates", function() {
-                    var point = projection.fromLatLngToPoint(new google.maps.LatLng(43.0, -3.0))
+                    var point = projection.fromLatLngToPoint(new gm.LatLng(43.0, -3.0))
 
                     expect(point).toEqualToXYWithDelta({x: 1441.125, y: 603.067}, 0.001)
                 })
@@ -30,7 +30,7 @@ describe("IgnProjection with the default lat-lng to UTM converter", function() {
                 it("maps a world point with positive coordinates to lat-lng east and south from the origin tile", function() {
                     var latLng = projection.fromPointToLatLng(new google.maps.Point(1441.125, 603.067))
 
-                    expect(latLng).toEqualToLatLngWithDelta({lat: 43.0, lng: -3.0}, 0.001)
+                    expect(latLng).toEqualToLatLngWithDelta(new gm.LatLng(43.0, -3.0), 0.001)
                 })
             })
         })

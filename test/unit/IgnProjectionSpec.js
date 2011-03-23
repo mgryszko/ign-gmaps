@@ -15,7 +15,7 @@ describe("IgnProjection", function() {
             var utmZone = 30
 
             context("the most upper left pixel of the origin tile corresponds to the Google Maps world origin", function() {
-                var originTileLatLng = {lat: 44.0, lng: -7.0}
+                var originTileLatLng = new gm.LatLng(44.0, -7.0)
 
                 var coordConverter
                 var projection
@@ -56,15 +56,15 @@ describe("IgnProjection", function() {
                     var worldPoint = projection.fromLatLngToPoint(latLng)
 
                     expect(worldPoint).toEqualToXYWithDelta(expWorldPoint, 0.000001)
-                    expect(coordConverter.latLngToUtm).toHaveBeenCalledWith({lat: latLng.lat(), lng: latLng.lng()})
+                    expect(coordConverter.latLngToUtm).toHaveBeenCalledWith(latLng)
                 }
 
                 it("maps a world point with positive coordinates to lat-lng east and south from the origin tile", function() {
-                    coordConverter.utmToLatLng.andReturn({lat: 43.000155, lng: -3.000393})
+                    coordConverter.utmToLatLng.andReturn(new gm.LatLng(43.000155, -3.000393))
 
                     var latLng = projection.fromPointToLatLng(new gm.Point(1441, 603))
 
-                    expect(latLng).toEqualToLatLngWithDelta({lat: 43.000155, lng: -3.000393}, 0.000001)
+                    expect(latLng).toEqualToLatLngWithDelta(new gm.LatLng(43.000155, -3.000393), 0.000001)
                     expect(coordConverter.utmToLatLng).toHaveBeenCalledWith({x: 499968, y: 4760832})
                 })
 

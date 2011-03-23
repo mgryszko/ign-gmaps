@@ -1,3 +1,5 @@
+var gm = google.maps
+
 var TILE_SIZE_PX = 256
 
 var IGN_MAPS = {
@@ -26,7 +28,7 @@ function CoordinateConverter(utmZone) {
     }
 
     this.latLngToUtm = function(latLng) {
-        var point = new Proj4js.Point(latLng.lng, latLng.lat)
+        var point = new Proj4js.Point(latLng.lng(), latLng.lat())
         Proj4js.transform(etrsProjection, utmProjections[utmZone], point)
 
         return {x: point.x, y: point.y}
@@ -36,7 +38,7 @@ function CoordinateConverter(utmZone) {
         var point = new Proj4js.Point(utm.x, utm.y)
         Proj4js.transform(utmProjections[utmZone], etrsProjection, point)
 
-        return {lat: point.y, lng: point.x}
+        return new gm.LatLng(point.y, point.x)
     }
 }
 
@@ -68,6 +70,7 @@ IgnTileCalculator.createForUtmZone = function(utmZone) {
     return new IgnTileCalculator(utmZone)
 }
 
+
 function IgnProjection(config) {
     var utmZone = config.utmZone
     var originTileLatLng = config.originTileLatLng
@@ -81,12 +84,11 @@ function IgnProjection(config) {
     }()
 
     this.fromLatLngToPoint = function(latLng) {
-        var utm = coordConverter.latLngToUtm({lat: latLng.lat(), lng: latLng.lng()})
-        var worldPoint = {
-            x: (utm.x - originUtm.x) / tileScaleForBaseZoom,
-            y: (originUtm.y - utm.y) / tileScaleForBaseZoom
-        }
-        return new google.maps.Point(worldPoint.x, worldPoint.y)
+        var utm = coordConverter.latLngToUtm(latLng)
+        return new google.maps.Point(
+            (utm.x - originUtm.x) / tileScaleForBaseZoom,
+            (originUtm.y - utm.y) / tileScaleForBaseZoom
+        )
     }
 
     this.fromPointToLatLng = function(worldPoint) {
@@ -94,8 +96,7 @@ function IgnProjection(config) {
             x: worldPoint.x * tileScaleForBaseZoom + originUtm.x,
             y: originUtm.y - worldPoint.y * tileScaleForBaseZoom
         }
-        var latLng = coordConverter.utmToLatLng(utm)
-        return new google.maps.LatLng(latLng.lat, latLng.lng);
+        return coordConverter.utmToLatLng(utm)
     }
 }
 
