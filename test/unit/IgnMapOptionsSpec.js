@@ -6,17 +6,15 @@ describe("IgnMapOptions", function() {
         })
     })
 
-    context("for each configuration", function () {
-        var dummyUtmZone = 0
-        var dummyOriginTileLatLng = {lat: 0, lng: 0}
+    context("each configuration", function () {
         var dummyConfig = {
-            tileScaleForBaseZoom: 0, utmZone: dummyUtmZone, originTileLatLng: dummyOriginTileLatLng, ignMaps: []
+            tileScaleForBaseZoom: 0, utmZone: 0, originTileLatLng: new gm.LatLng(0, 0), ignMaps: []
         }
         var mapOptions
 
         beforeEach(function() {
-            var originTile = new ign.Tile(2, 74)
-            spyOn(ign.Tile, "createForLatLng").andReturn(originTile)
+            var dummyOriginTile = new ign.Tile(2, 74)
+            spyOn(ign.Tile, "createForLatLng").andReturn(dummyOriginTile)
 
             mapOptions = new IgnMapOptions(dummyConfig)
         })
@@ -26,9 +24,10 @@ describe("IgnMapOptions", function() {
         })
 
         it("has the same tile size", function() {
-            expect(mapOptions.tileSize.width).toEqual(256)
-            expect(mapOptions.tileSize.height).toEqual(256)
+            expect(mapOptions.tileSize.width).toEqual(ign.Tile.SIZE_IN_PX)
+            expect(mapOptions.tileSize.height).toEqual(ign.Tile.SIZE_IN_PX)
         })
+        
         it("flags tiles as not PNG", function() {
             expect(mapOptions.isPng).toBeFalsy()
         })
@@ -44,14 +43,13 @@ describe("IgnMapOptions", function() {
                 var originTileLatLng = new gm.LatLng(44.0, -7.0)
 
                 context("is configured with an IGN map type for every zoom level", function () {
-                    var ignMaps = [ign.MAP_TYPES.TOPO_1000, ign.MAP_TYPES.TOPO_1000,
-                        ign.MAP_TYPES.TOPO_200, ign.MAP_TYPES.TOPO_200,
-                        ign.MAP_TYPES.TOPO_50, ign.MAP_TYPES.TOPO_50,
-                        ign.MAP_TYPES.TOPO_25, ign.MAP_TYPES.TOPO_25, ign.MAP_TYPES.TOPO_25]
+                    var ignMaps = [ign.MAP_TYPES.TOPO_1000, ign.MAP_TYPES.TOPO_200,
+                        ign.MAP_TYPES.TOPO_50, ign.MAP_TYPES.TOPO_25]
+                    var originTile
                     var mapOptions
 
                     beforeEach(function() {
-                        var originTile = new ign.Tile(2, 74, tileScaleForBaseZoom, utmZone)
+                        originTile = new ign.Tile(2, 74, tileScaleForBaseZoom, utmZone)
                         spyOn(ign.Tile, "createForLatLng").andReturn(originTile)
 
                         mapOptions = new IgnMapOptions({
@@ -65,31 +63,36 @@ describe("IgnMapOptions", function() {
                     })
 
                     it("has a maximum zoom level", function() {
-                        var expMaxZoom = ignMaps.length - 1
-                        
-                        expect(mapOptions.maxZoom).toEqual(expMaxZoom)
+                        expect(mapOptions.maxZoom).toEqual(ignMaps.length - 1)
                     })
 
-                    context("on that zoom level", function() {
-                        var tileScales = [256, 128, 64, 32, 16, 8, 4, 2, 1]
+                    context("on a zoom level", function() {
+                        var tiles = [
+                            new ign.Tile(2, 74, 256, utmZone),
+                            new ign.Tile(4, 149, 128, utmZone),
+                            new ign.Tile(8, 299, 64, utmZone),
+                            new ign.Tile(16, 597, 32, utmZone)
+                        ]
                         var maxZoom = ignMaps.length - 1
 
                         $R(0, maxZoom).each(function(zoom) {
                             it("creates the tile URL for the Google Maps world origin", function() {
-                                var tileIgnCoord = [{i: 2, j: 74}, {i: 4, j: 149}, {i: 8, j: 299}, {i: 16, j: 599},
-                                    {i: 32, j: 1199}, {i: 64, j: 2399}, {i: 128, j: 4799}, {i: 256, j: 9599},
-                                    {i: 512, j: 19199}]
-                                var worldPoint = new gm.Point(0, 0)
+                                var originTileForGMapsZoom = new ign.Tile()
+                                spyOn(originTile, "spawnTileForGMapsZoom").andReturn(originTileForGMapsZoom)
+                                spyOn(originTileForGMapsZoom, "moveBy").andReturn(tiles[zoom])
+                                var tileCoord = new gm.Point(0, 0)
 
-                                var url = mapOptions.getTileUrl(worldPoint, zoom)
+                                var url = mapOptions.getTileUrl(tileCoord, zoom)
 
                                 expect(url).toStartWith("http://ts0.iberpix.ign.es/tileserver/")
                                 expect(url).toContain("n=" + ignMaps[zoom])
-                                expect(url).toContain("z=" + utmZone)
-                                expect(url).toContain("r=" + (tileScales[zoom] * 1000))
-                                expect(url).toContain("i=" + tileIgnCoord[zoom].i)
-                                expect(url).toContain("j=" + tileIgnCoord[zoom].j)
+                                expect(url).toContain("z=" + tiles[zoom].utmZone())
+                                expect(url).toContain("r=" + (tiles[zoom].scale() * 1000))
+                                expect(url).toContain("i=" + tiles[zoom].x())
+                                expect(url).toContain("j=" + tiles[zoom].y())
                                 expect(url).toEndWith(".jpg")
+                                expect(originTile.spawnTileForGMapsZoom).toHaveBeenCalledWith(zoom)
+                                expect(originTileForGMapsZoom.moveBy).toHaveBeenCalledWith(tileCoord.x, -tileCoord.y)
                             })
                         })
                     })
