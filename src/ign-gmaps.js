@@ -8,6 +8,15 @@ Proj4js.defs["EPSG:3043"] = "+proj=utm +zone=31 +ellps=GRS80 +units=m +no_defs" 
 var gm = google.maps
 var ign = {}
 
+ign.ETRS_PROJECTION = new Proj4js.Proj("EPSG:4258")
+ign.UTM_PROJECTIONS = {
+    27: new Proj4js.Proj("EPSG:3039"),
+    28: new Proj4js.Proj("EPSG:3040"),
+    29: new Proj4js.Proj("EPSG:3041"),
+    30: new Proj4js.Proj("EPSG:3042"),
+    31: new Proj4js.Proj("EPSG:3043")
+}
+
 ign.MAP_TYPES = {
     TOPO_1000: "mapa_millon",
     TOPO_200: "mapa_mtn200",
@@ -21,6 +30,31 @@ ign.Utm = function(x, y, zone) {
     this.zone = function() { return zone }
 }
 
+ign.Utm.prototype.toLatLng = function() {
+    var point = new Proj4js.Point(this.x(), this.y())
+    Proj4js.transform(ign.UTM_PROJECTIONS[this.zone()], ign.ETRS_PROJECTION, point)    
+    return new gm.LatLng(point.y, point.x)
+}
+
+
+ign.LatLng = function(lat, lng) {
+    gm.LatLng.call(this, lat, lng)
+}
+ign.LatLng.prototype = new gm.LatLng()
+ign.LatLng.prototype.constructor = ign.LatLng
+
+ign.LatLng.createFromLatLng = function(source) {
+    return new ign.LatLng(source.lat(), source.lng())
+}
+
+ign.LatLng.prototype.toUtm = function(utmZone) {
+    var point = new Proj4js.Point(this.lng(), this.lat())
+    Proj4js.transform(ign.ETRS_PROJECTION, ign.UTM_PROJECTIONS[utmZone], point)
+
+    return new ign.Utm(point.x, point.y)
+}
+
+
 ign.Tile = function(x, y, scale, utmZone) {
     this.x = function() { return x }
     this.y = function() { return y }
@@ -30,9 +64,8 @@ ign.Tile = function(x, y, scale, utmZone) {
 
 ign.Tile.SIZE_IN_PX = 256
 
-ign.Tile.createForLatLng = function (latLng, scale, utmZone) {
-    var coordConverter = CoordinateConverter.createForUtmZone(utmZone)
-    var utm = coordConverter.latLngToUtm(latLng)
+ign.Tile.createForLatLng = function(latLng, scale, utmZone) {
+    var utm = ign.LatLng.createFromLatLng(latLng).toUtm(utmZone)
 
     return new ign.Tile(
         Math.floor(utm.x() / (scale * ign.Tile.SIZE_IN_PX)),
@@ -71,49 +104,18 @@ ign.Tile.prototype.toString = function() {
 }
 
 
-function CoordinateConverter(utmZone) {
-    var etrsProjection = new Proj4js.Proj("EPSG:4258")
-    var utmProjections = {
-        27: new Proj4js.Proj("EPSG:3039"),
-        28: new Proj4js.Proj("EPSG:3040"),
-        29: new Proj4js.Proj("EPSG:3041"),
-        30: new Proj4js.Proj("EPSG:3042"),
-        31: new Proj4js.Proj("EPSG:3043")
-    }
-
-    this.latLngToUtm = function(latLng) {
-        var point = new Proj4js.Point(latLng.lng(), latLng.lat())
-        Proj4js.transform(etrsProjection, utmProjections[utmZone], point)
-
-        return new ign.Utm(point.x, point.y)
-    }
-
-    this.utmToLatLng = function(utm) {
-        var point = new Proj4js.Point(utm.x(), utm.y())
-        Proj4js.transform(utmProjections[utmZone], etrsProjection, point)
-
-        return new gm.LatLng(point.y, point.x)
-    }
-}
-
-CoordinateConverter.createForUtmZone = function(utmZone) {
-    return new CoordinateConverter(utmZone)
-}
-
-
 function IgnProjection(config) {
     var utmZone = config.utmZone
     var originTileLatLng = config.originTileLatLng
     var tileScaleForBaseZoom = config.tileScaleForBaseZoom
 
-    var coordConverter = CoordinateConverter.createForUtmZone(utmZone)
     var originUtm = function() {
         var originTile = ign.Tile.createForLatLng(originTileLatLng, tileScaleForBaseZoom, utmZone)
         return originTile.upperLeftPixelUtm()
     }()
 
     this.fromLatLngToPoint = function(latLng) {
-        var utm = coordConverter.latLngToUtm(latLng)
+        var utm = ign.LatLng.createFromLatLng(latLng).toUtm(utmZone)
         return new gm.Point(
             (utm.x() - originUtm.x()) / tileScaleForBaseZoom,
             (originUtm.y() - utm.y()) / tileScaleForBaseZoom
@@ -123,9 +125,10 @@ function IgnProjection(config) {
     this.fromPointToLatLng = function(worldPoint) {
         var utm = new ign.Utm(
             worldPoint.x * tileScaleForBaseZoom + originUtm.x(),
-            originUtm.y() - worldPoint.y * tileScaleForBaseZoom
+            originUtm.y() - worldPoint.y * tileScaleForBaseZoom,
+            utmZone
         )
-        return coordConverter.utmToLatLng(utm)
+        return utm.toLatLng()
     }
 }
 

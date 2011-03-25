@@ -39,6 +39,7 @@ describe("IgnMapOptions", function() {
         context("for an UTM zone", function() {
             var utmZone = 30
 
+            // TODO rename context (GMaps world origin)
             context("the most upper left pixel of the origin tile corresponds to the Google Maps world origin", function() {
                 var originTileLatLng = new gm.LatLng(44.0, -7.0)
 
