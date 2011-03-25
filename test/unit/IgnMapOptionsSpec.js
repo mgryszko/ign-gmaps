@@ -44,10 +44,10 @@ describe("IgnMapOptions", function() {
                 var originTileLatLng = new gm.LatLng(44.0, -7.0)
 
                 context("is configured with an IGN map type for every zoom level", function () {
-                    var ignMaps = [IGN_MAPS.TOPO_1000, IGN_MAPS.TOPO_1000,
-                        IGN_MAPS.TOPO_200, IGN_MAPS.TOPO_200,
-                        IGN_MAPS.TOPO_50, IGN_MAPS.TOPO_50,
-                        IGN_MAPS.TOPO_25, IGN_MAPS.TOPO_25, IGN_MAPS.TOPO_25]
+                    var ignMaps = [ign.MAP_TYPES.TOPO_1000, ign.MAP_TYPES.TOPO_1000,
+                        ign.MAP_TYPES.TOPO_200, ign.MAP_TYPES.TOPO_200,
+                        ign.MAP_TYPES.TOPO_50, ign.MAP_TYPES.TOPO_50,
+                        ign.MAP_TYPES.TOPO_25, ign.MAP_TYPES.TOPO_25, ign.MAP_TYPES.TOPO_25]
                     var mapOptions
 
                     beforeEach(function() {

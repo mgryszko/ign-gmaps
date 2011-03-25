@@ -1,21 +1,19 @@
-var gm = google.maps
-var ign = {}
-
-var TILE_SIZE_PX = 256
-
-var IGN_MAPS = {
-    TOPO_1000: "mapa_millon",
-    TOPO_200: "mapa_mtn200",
-    TOPO_50: "mapa_mtn50",
-    TOPO_25: "mapa_mtn25"
-}
-
 Proj4js.defs["EPSG:4258"] = "+proj=longlat +ellps=GRS80 +no_defs" //lat/lon with ETRS89 datum
 Proj4js.defs["EPSG:3039"] = "+proj=utm +zone=27 +ellps=GRS80 +units=m +no_defs" //UTM 27N with ETRS89 datum
 Proj4js.defs["EPSG:3040"] = "+proj=utm +zone=28 +ellps=GRS80 +units=m +no_defs" //UTM 28N with ETRS89 datum
 Proj4js.defs["EPSG:3041"] = "+proj=utm +zone=29 +ellps=GRS80 +units=m +no_defs" //UTM 29N with ETRS89 datum
 Proj4js.defs["EPSG:3042"] = "+proj=utm +zone=30 +ellps=GRS80 +units=m +no_defs" //UTM 30N with ETRS89 datum
 Proj4js.defs["EPSG:3043"] = "+proj=utm +zone=31 +ellps=GRS80 +units=m +no_defs" //UTM 31N with ETRS89 datum
+
+var gm = google.maps
+var ign = {}
+
+ign.MAP_TYPES = {
+    TOPO_1000: "mapa_millon",
+    TOPO_200: "mapa_mtn200",
+    TOPO_50: "mapa_mtn50",
+    TOPO_25: "mapa_mtn25"
+}
 
 ign.Utm = function(x, y, zone) {
     this.x = function() { return x }
@@ -135,19 +133,19 @@ function IgnMapOptions(config) {
     var utmZone = config.utmZone
     var originTileLatLng = config.originTileLatLng
     var tileScaleForBaseZoom = config.tileScaleForBaseZoom
-    var ignMaps = config.ignMaps
+    var ignMapTypes = config.ignMaps
     var originTile = ign.Tile.createForLatLng(originTileLatLng, tileScaleForBaseZoom, utmZone)
 
     this.minZoom = 0
-    this.maxZoom = ignMaps.length - 1
-    this.tileSize = new gm.Size(TILE_SIZE_PX, TILE_SIZE_PX)
+    this.maxZoom = ignMapTypes.length - 1
+    this.tileSize = new gm.Size(ign.Tile.SIZE_IN_PX, ign.Tile.SIZE_IN_PX)
     this.isPng = false
 
     this.getTileUrl = function(tileCoord, zoom) {
         var tile = originTile.spawnTileForGMapsZoom(zoom).moveBy(tileCoord.x, -tileCoord.y)
 
         return "http://ts0.iberpix.ign.es/tileserver/" +
-                "n=" + ignMaps[zoom] +
+                "n=" + ignMapTypes[zoom] +
                 ";z=" + tile.utmZone() + ";r=" + (tile.scale() * 1000) +
                 ";i=" + tile.x() + ";j=" + tile.y() + ".jpg"
     }

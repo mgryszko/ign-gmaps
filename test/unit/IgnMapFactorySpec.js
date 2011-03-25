@@ -22,7 +22,10 @@ describe("IgnMapFactory", function() {
 
     it("creates a IGN map type configured with projection", function () {
         var config = {
-            tileScaleForBaseZoom: 256, utmZone: 30, originTileLatLng: new gm.LatLng(44.0, -7.0), ignMaps: [IGN_MAPS.TOPO_1000]
+            tileScaleForBaseZoom: 256,
+            utmZone: 30,
+            originTileLatLng: new gm.LatLng(44.0, -7.0),
+            ignMaps: [ign.MAP_TYPES.TOPO_1000]
         }
 
         var mapType = mapFactory.createMapType(config)
