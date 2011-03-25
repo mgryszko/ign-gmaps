@@ -1,10 +1,8 @@
 describe("IgnProjection", function() {
-    var gm = google.maps
-
     beforeEach(function() {
         this.addMatchers({
-            toEqualToXYWithDelta: toEqualToXYWithDelta,
-            toEqualToLatLngWithDelta: toEqualToLatLngWithDelta
+            toEqualToLatLngWithDelta: toEqualToLatLngWithDelta,
+            toEqualToPointWithDelta: toEqualToPointWithDelta
         })
     })
 
@@ -22,11 +20,9 @@ describe("IgnProjection", function() {
 
                 beforeEach(function() {
                     coordConverter = CoordinateConverter.createSpyForUtmZone()
-                    var ignTileCalculator = IgnTileCalculator.createSpyForUtmZone()
-                    var originTileIgnCoord = {x: 2, y: 74}
-                    var originTileUpperLeftPixelUtm = new ign.Utm(131072, 4915200)
-                    ignTileCalculator.latLngToTileIgnCoord.andReturn(originTileIgnCoord)
-                    ignTileCalculator.upperLeftPixelUtm.andReturn(originTileUpperLeftPixelUtm)
+                    var originTile = new ign.Tile(2, 74, tileScale, utmZone)
+                    spyOn(ign.Tile, "createForLatLng").andReturn(originTile)
+                    spyOn(originTile, "upperLeftPixelUtm").andReturn(new ign.Utm(131072, 4915200))
 
                     projection = new IgnProjection({
                         tileScaleForBaseZoom: tileScale,
@@ -35,9 +31,7 @@ describe("IgnProjection", function() {
                     })
 
                     CoordinateConverter.expectSpyCreatedForUtmZone(utmZone)
-                    IgnTileCalculator.expectSpyCreatedForUtmZone(utmZone)
-                    expect(ignTileCalculator.latLngToTileIgnCoord).toHaveBeenCalledWith(tileScale, originTileLatLng)
-                    expect(ignTileCalculator.upperLeftPixelUtm).toHaveBeenCalledWith(tileScale, originTileIgnCoord)
+                    expect(ign.Tile.createForLatLng).toHaveBeenCalledWith(originTileLatLng, tileScale, utmZone)
                 })
 
                 it("maps a lan-lng east and south from the origin tile to a world point with positive coordinates", function() {
@@ -55,7 +49,7 @@ describe("IgnProjection", function() {
 
                     var worldPoint = projection.fromLatLngToPoint(latLng)
 
-                    expect(worldPoint).toEqualToXYWithDelta(expWorldPoint, 0.000001)
+                    expect(worldPoint).toEqualToPointWithDelta(expWorldPoint, 0.000001)
                     expect(coordConverter.latLngToUtm).toHaveBeenCalledWith(latLng)
                 }
 
@@ -65,13 +59,15 @@ describe("IgnProjection", function() {
                     var latLng = projection.fromPointToLatLng(new gm.Point(1441, 603))
 
                     expect(latLng).toEqualToLatLngWithDelta(new gm.LatLng(43.000155, -3.000393), 0.000001)
-                    expect(coordConverter.utmToLatLng).toHaveBeenCalledWith(new ign.Utm(499968, 4760832))
+
+                    expect(coordConverter.utmToLatLng.mostRecentCall.args[0].x()).toEqual(499968)
+                    expect(coordConverter.utmToLatLng.mostRecentCall.args[0].y()).toEqual(4760832)
                 })
 
                 it("1 tile pixel corresponds to 1 world point", function() {
                     var latLng = new gm.LatLng(44.296377, -7.624554)
                     var utm = new ign.Utm(131072, 4915200)
-                    var utmOnePxAway = new ign.Utm(utm.x + tileScale, utm.y + tileScale)
+                    var utmOnePxAway = new ign.Utm(utm.x() + tileScale, utm.y() + tileScale)
 
                     coordConverter.latLngToUtm.andReturn(utm)
                     var worldPoint = projection.fromLatLngToPoint(latLng)

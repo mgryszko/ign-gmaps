@@ -15,8 +15,8 @@ describe("IgnMapOptions", function() {
         var mapOptions
 
         beforeEach(function() {
-            var ignTileCalculator = IgnTileCalculator.createSpyForUtmZone()
-            ignTileCalculator.latLngToTileIgnCoord.andReturn({x: 2, y: 74})
+            var originTile = new ign.Tile(2, 74)
+            spyOn(ign.Tile, "createForLatLng").andReturn(originTile)
 
             mapOptions = new IgnMapOptions(dummyConfig)
         })
@@ -51,8 +51,8 @@ describe("IgnMapOptions", function() {
                     var mapOptions
 
                     beforeEach(function() {
-                        var ignTileCalculator = IgnTileCalculator.createSpyForUtmZone()
-                        ignTileCalculator.latLngToTileIgnCoord.andReturn({x: 2, y: 74})
+                        var originTile = new ign.Tile(2, 74, tileScaleForBaseZoom, utmZone)
+                        spyOn(ign.Tile, "createForLatLng").andReturn(originTile)
 
                         mapOptions = new IgnMapOptions({
                             tileScaleForBaseZoom: tileScaleForBaseZoom,
@@ -60,9 +60,8 @@ describe("IgnMapOptions", function() {
                             originTileLatLng: originTileLatLng,
                             ignMaps: ignMaps
                         })
-                        
-                        IgnTileCalculator.expectSpyCreatedForUtmZone(utmZone)
-                        expect(ignTileCalculator.latLngToTileIgnCoord).toHaveBeenCalledWith(tileScaleForBaseZoom, originTileLatLng)
+
+                        expect(ign.Tile.createForLatLng).toHaveBeenCalledWith(originTileLatLng, tileScaleForBaseZoom, utmZone)
                     })
 
                     it("has a maximum zoom level", function() {
@@ -80,7 +79,7 @@ describe("IgnMapOptions", function() {
                                 var tileIgnCoord = [{i: 2, j: 74}, {i: 4, j: 149}, {i: 8, j: 299}, {i: 16, j: 599},
                                     {i: 32, j: 1199}, {i: 64, j: 2399}, {i: 128, j: 4799}, {i: 256, j: 9599},
                                     {i: 512, j: 19199}]
-                                var worldPoint = new google.maps.Point(0, 0)
+                                var worldPoint = new gm.Point(0, 0)
 
                                 var url = mapOptions.getTileUrl(worldPoint, zoom)
 

@@ -1,7 +1,7 @@
 describe("CoordinateConverter", function() {
     beforeEach(function() {
         this.addMatchers({
-            toEqualToXYWithDelta: toEqualToXYWithDelta,
+            toEqualToUtmWithDelta: toEqualToUtmWithDelta,
             toEqualToLatLngWithDelta: toEqualToLatLngWithDelta
         })
     })
@@ -23,7 +23,7 @@ describe("CoordinateConverter", function() {
             var point = points[utmZone]
 
             it("converts lat-lng to UTM", function() {
-                expect(converter.latLngToUtm(point.latLng)).toEqualToXYWithDelta(point.utm, 0.1)
+                expect(converter.latLngToUtm(point.latLng)).toEqualToUtmWithDelta(point.utm, 0.1)
             })
             it("converts UTM to lat-lng", function() {
                 expect(converter.utmToLatLng(point.utm)).toEqualToLatLngWithDelta(point.latLng, 0.000001)
@@ -51,7 +51,7 @@ describe("CoordinateConverter", function() {
 
             points.each(function(point) {
                 it("converts lat-lng to UTM", function() {
-                    expect(converter.latLngToUtm(point.latLng)).toEqualToXYWithDelta(point.utm, 0.1)
+                    expect(converter.latLngToUtm(point.latLng)).toEqualToUtmWithDelta(point.utm, 0.1)
                 })
                 it("converts UTM to lat-lng", function() {
                     expect(converter.utmToLatLng(point.utm)).toEqualToLatLngWithDelta(point.latLng, 0.000001)

@@ -12,14 +12,12 @@ describe("IgnMapFactory", function() {
             toBeInstanceOf: function(expected) { return this.actual instanceof expected }
         })
 
-        ImageMapType = google.maps.ImageMapType
-        google.maps.ImageMapType = function ImageMapTypeSpy(options) {
-            this.options = options
-        }
+        ImageMapType = gm.ImageMapType
+        gm.ImageMapType = function ImageMapTypeSpy(options) { this.options = options }
     })
 
     afterEach(function() {
-        google.maps.ImageMapType = ImageMapType
+        gm.ImageMapType = ImageMapType
     })
 
     it("creates a IGN map type configured with projection", function () {

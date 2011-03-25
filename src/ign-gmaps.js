@@ -17,10 +17,61 @@ Proj4js.defs["EPSG:3041"] = "+proj=utm +zone=29 +ellps=GRS80 +units=m +no_defs" 
 Proj4js.defs["EPSG:3042"] = "+proj=utm +zone=30 +ellps=GRS80 +units=m +no_defs" //UTM 30N with ETRS89 datum
 Proj4js.defs["EPSG:3043"] = "+proj=utm +zone=31 +ellps=GRS80 +units=m +no_defs" //UTM 31N with ETRS89 datum
 
-ign.Utm = function(x, y) {
-    this.x = x
-    this.y = y
+ign.Utm = function(x, y, zone) {
+    this.x = function() { return x }
+    this.y = function() { return y }
+    this.zone = function() { return zone }
 }
+
+ign.Tile = function(x, y, scale, utmZone) {
+    this.x = function() { return x }
+    this.y = function() { return y }
+    this.scale = function() { return scale }
+    this.utmZone = function() { return utmZone }
+}
+
+ign.Tile.SIZE_IN_PX = 256
+
+ign.Tile.createForLatLng = function (latLng, scale, utmZone) {
+    var coordConverter = CoordinateConverter.createForUtmZone(utmZone)
+    var utm = coordConverter.latLngToUtm(latLng)
+
+    return new ign.Tile(
+        Math.floor(utm.x() / (scale * ign.Tile.SIZE_IN_PX)),
+        Math.floor(utm.y() / (scale * ign.Tile.SIZE_IN_PX)),
+        scale, utmZone
+    )
+}
+
+ign.Tile.prototype.upperLeftPixelUtm = function() {
+    return new ign.Utm(
+        this.x() * this.scale() * ign.Tile.SIZE_IN_PX,
+        (this.y() + 1) * this.scale() * ign.Tile.SIZE_IN_PX
+    )
+}
+
+ign.Tile.prototype.spawnTileForGMapsZoom = function(zoom) {
+    function xForGMapsZoom(x, zoom) { return x << zoom }
+    function yForGMapsZoom(y, zoom) {
+        for (var i = 1; i <= zoom; i++) {
+            y = y * 2 + 1
+        }
+        return y
+    }
+    function scaleForGMapsZoom(scale, zoom) { return scale >> zoom }
+
+    return new ign.Tile(xForGMapsZoom(this.x(), zoom), yForGMapsZoom(this.y(), zoom),
+            scaleForGMapsZoom(this.scale(), zoom), this.utmZone())
+}
+
+ign.Tile.prototype.moveBy = function(deltaX, deltaY) {
+    return new ign.Tile(this.x() + deltaX, this.y() + deltaY, this.scale(), this.utmZone())
+}
+
+ign.Tile.prototype.toString = function() {
+    return "(" + this.x() + ", " + this.y() + ") " + this.scale() + " m/px " + this.utmZone() + "N" 
+}
+
 
 function CoordinateConverter(utmZone) {
     var etrsProjection = new Proj4js.Proj("EPSG:4258")
@@ -40,7 +91,7 @@ function CoordinateConverter(utmZone) {
     }
 
     this.utmToLatLng = function(utm) {
-        var point = new Proj4js.Point(utm.x, utm.y)
+        var point = new Proj4js.Point(utm.x(), utm.y())
         Proj4js.transform(utmProjections[utmZone], etrsProjection, point)
 
         return new gm.LatLng(point.y, point.x)
@@ -52,30 +103,6 @@ CoordinateConverter.createForUtmZone = function(utmZone) {
 }
 
 
-function IgnTileCalculator(utmZone) {
-    var coordConverter = CoordinateConverter.createForUtmZone(utmZone)
-
-    this.latLngToTileIgnCoord = function(tileScale, latLng) {
-        var utm = coordConverter.latLngToUtm(latLng)
-        return {
-            x: Math.floor(utm.x / (tileScale * TILE_SIZE_PX)),
-            y: Math.floor(utm.y / (tileScale * TILE_SIZE_PX))
-        }
-    }
-
-    this.upperLeftPixelUtm = function(tileScale, tileIgnCoord) {
-        return {
-            x: tileIgnCoord.x * tileScale * TILE_SIZE_PX,
-            y: (tileIgnCoord.y + 1) * tileScale * TILE_SIZE_PX
-        }        
-    }
-}
-
-IgnTileCalculator.createForUtmZone = function(utmZone) {
-    return new IgnTileCalculator(utmZone)
-}
-
-
 function IgnProjection(config) {
     var utmZone = config.utmZone
     var originTileLatLng = config.originTileLatLng
@@ -83,24 +110,23 @@ function IgnProjection(config) {
 
     var coordConverter = CoordinateConverter.createForUtmZone(utmZone)
     var originUtm = function() {
-        var ignTileCalculator = IgnTileCalculator.createForUtmZone(utmZone)
-        var originTileIgnCoord = ignTileCalculator.latLngToTileIgnCoord(tileScaleForBaseZoom, originTileLatLng)
-        return ignTileCalculator.upperLeftPixelUtm(tileScaleForBaseZoom, originTileIgnCoord)
+        var originTile = ign.Tile.createForLatLng(originTileLatLng, tileScaleForBaseZoom, utmZone)
+        return originTile.upperLeftPixelUtm()
     }()
 
     this.fromLatLngToPoint = function(latLng) {
         var utm = coordConverter.latLngToUtm(latLng)
-        return new google.maps.Point(
-            (utm.x - originUtm.x) / tileScaleForBaseZoom,
-            (originUtm.y - utm.y) / tileScaleForBaseZoom
+        return new gm.Point(
+            (utm.x() - originUtm.x()) / tileScaleForBaseZoom,
+            (originUtm.y() - utm.y()) / tileScaleForBaseZoom
         )
     }
 
     this.fromPointToLatLng = function(worldPoint) {
-        var utm = {
-            x: worldPoint.x * tileScaleForBaseZoom + originUtm.x,
-            y: originUtm.y - worldPoint.y * tileScaleForBaseZoom
-        }
+        var utm = new ign.Utm(
+            worldPoint.x * tileScaleForBaseZoom + originUtm.x(),
+            originUtm.y() - worldPoint.y * tileScaleForBaseZoom
+        )
         return coordConverter.utmToLatLng(utm)
     }
 }
@@ -110,50 +136,27 @@ function IgnMapOptions(config) {
     var originTileLatLng = config.originTileLatLng
     var tileScaleForBaseZoom = config.tileScaleForBaseZoom
     var ignMaps = config.ignMaps
-
-    var ignTileCalculator = IgnTileCalculator.createForUtmZone(utmZone)
-    var originTileIgnCoord = ignTileCalculator.latLngToTileIgnCoord(tileScaleForBaseZoom, originTileLatLng)
+    var originTile = ign.Tile.createForLatLng(originTileLatLng, tileScaleForBaseZoom, utmZone)
 
     this.minZoom = 0
     this.maxZoom = ignMaps.length - 1
-
-    this.tileSize = new google.maps.Size(TILE_SIZE_PX, TILE_SIZE_PX)
+    this.tileSize = new gm.Size(TILE_SIZE_PX, TILE_SIZE_PX)
     this.isPng = false
 
-    function originTileIgnXCoordForZoom(zoom) {
-        return originTileIgnCoord.x << zoom
-    }
-
-    function originTileIgnYCoordForZoom(zoom) {
-        var y = originTileIgnCoord.y
-        for (var i = 1; i <= zoom; i++) {
-            y = y * 2 + 1
-        }
-        return y
-    }
-
     this.getTileUrl = function(tileCoord, zoom) {
-        var mapType = ignMaps[zoom]
-        var scale = tileScaleForBaseZoom * 1000 >> zoom
-        var tileIgnCoord = {
-            x: originTileIgnXCoordForZoom(zoom) + tileCoord.x,
-            y: originTileIgnYCoordForZoom(zoom) - tileCoord.y
-        }
+        var tile = originTile.spawnTileForGMapsZoom(zoom).moveBy(tileCoord.x, -tileCoord.y)
 
         return "http://ts0.iberpix.ign.es/tileserver/" +
-                "n=" + mapType +
-                ";z=" + utmZone +
-                ";r=" + scale +
-                ";i=" + tileIgnCoord.x +
-                ";j=" + tileIgnCoord.y +
-                ".jpg"
+                "n=" + ignMaps[zoom] +
+                ";z=" + tile.utmZone() + ";r=" + (tile.scale() * 1000) +
+                ";i=" + tile.x() + ";j=" + tile.y() + ".jpg"
     }
 }
 
 function IgnMapFactory() {
     this.createMapType = function(config) {
         var mapOptions = new IgnMapOptions(config)
-        var mapType = new google.maps.ImageMapType(mapOptions)
+        var mapType = new gm.ImageMapType(mapOptions)
         mapType.projection = new IgnProjection(config)
 
         return mapType

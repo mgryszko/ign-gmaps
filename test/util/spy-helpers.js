@@ -8,15 +8,3 @@ CoordinateConverter.createSpyForUtmZone = function() {
 CoordinateConverter.expectSpyCreatedForUtmZone = function(utmZone) {
     expect(CoordinateConverter.createForUtmZone).toHaveBeenCalledWith(utmZone)
 }
-
-IgnTileCalculator.createSpyForUtmZone = function() {
-    var calculator = jasmine.createSpyObj(IgnTileCalculator, ["latLngToTileIgnCoord", "upperLeftPixelUtm"])
-    spyOn(IgnTileCalculator, "createForUtmZone").andReturn(calculator)
-
-    return calculator
-}
-
-IgnTileCalculator.expectSpyCreatedForUtmZone = function(utmZone) {
-    expect(IgnTileCalculator.createForUtmZone).toHaveBeenCalledWith(utmZone)
-}
-
