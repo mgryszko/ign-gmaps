@@ -18,45 +18,59 @@ describe("additional matchers", function() {
     })
 
     describe("toEqualToUtmWithDelta matcher", function() {
-        var actual = {actual: new ign.Utm(1.0, 2.0)}
+        // TODO one bad value pattern
+        var actual = {actual: new ign.Utm(1, 2, 30)}
 
-        it("matches an UTM coordinate within expected value plus/minus delta range", function() {
-            var expected = new ign.Utm(1.001, 1.999)
+        it("matches a Utm by planar coordinates plus/minus delta and UTM zone", function() {
+            var expected = new ign.Utm(1.001, 1.999, 30)
             expect(toEqualToUtmWithDelta.call(actual, expected, 0.001)).toBeTruthy()
         })
-        it("doesn't match an UTM coordinate outside the expected value plus/minus delta range", function() {
-            var expected = new ign.Utm(0.998, 2.002)
+        it("doesn't match a Utm due to planar coordinates plus/minus delta mismatch", function() {
+            var expected = new ign.Utm(0.998, 2, 30)
+            expect(toEqualToUtmWithDelta.call(actual, expected, 0.001)).toBeFalsy()
+            expected = new ign.Utm(1, 2.002, 30)
+            expect(toEqualToUtmWithDelta.call(actual, expected, 0.001)).toBeFalsy()
+        })
+        it("doesn't match a Utm due to zone mismatch", function() {
+            var expected = new ign.Utm(1, 2, 31)            
             expect(toEqualToUtmWithDelta.call(actual, expected, 0.001)).toBeFalsy()
         })
     })
 
     describe("toEqualToLatLngWithDelta matcher", function() {
+        // TODO one bad value pattern
         var latLng = new gm.LatLng(43.0, -3.0)
 
-        it("matches a lat-lng coordinate within expected value plus/minus delta range", function() {
+        it("matches a lat-lng by spherical coordinates plus/minus", function() {
             var expected = new gm.LatLng(43.001, -3.001)
             expect(toEqualToLatLngWithDelta.call({actual: latLng}, expected, 0.001)).toBeTruthy()
         })
-        it("doesn't match a lat-lng coordinate outside the expected value plus/minus delta range", function() {
-            var expected = new gm.LatLng(42.998, -2.999)
+        it("doesn't match a lat-lng due to spherical coordinates mismatch", function() {
+            var expected = new gm.LatLng(42.998, -3.0)
+            expect(toEqualToLatLngWithDelta.call({actual: latLng}, expected, 0.001)).toBeFalsy()
+            expected = new gm.LatLng(43.0, -2.998)
             expect(toEqualToLatLngWithDelta.call({actual: latLng}, expected, 0.001)).toBeFalsy()
         })
     })
 
     describe("toEqualToPointWithDelta matcher", function() {
+        // TODO one bad value pattern
         var actual = {actual: new gm.Point(1.0, 2.0)}
 
-        it("matches a world point within expected value plus/minus delta range", function() {
+        it("matches a world point by planar coordinates plus/minus delta", function() {
             var expected = new gm.Point(1.001, 1.999)
             expect(toEqualToPointWithDelta.call(actual, expected, 0.001)).toBeTruthy()
         })
-        it("doesn't match a world point outside the expected value plus/minus delta range", function() {
-            var expected = new gm.Point(0.998, 2.002)
+        it("doesn't match a world point due to planar coordinates mismatch", function() {
+            var expected = new gm.Point(0.998, 2.000)
+            expect(toEqualToPointWithDelta.call(actual, expected, 0.001)).toBeFalsy()
+            expected = new gm.Point(1.0, 2.002)
             expect(toEqualToPointWithDelta.call(actual, expected, 0.001)).toBeFalsy()
         })
     })
 
     describe("toEqualToTile matcher", function() {
+        // TODO one bad value pattern
         var actual = {actual: new ign.Tile(1, 2, 256, 30)}
 
         it("matches a tile by IGN coordinates, scale and UTM zone", function() {

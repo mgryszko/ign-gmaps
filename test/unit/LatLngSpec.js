@@ -6,31 +6,46 @@ describe("ign.LatLng", function() {
         })
     })
 
-    it("can be created with spherical coordinates", function () {
-        var latLng = new ign.LatLng(43.0, -3.0)
+    context("given spherical coordinates", function () {
+        var lat = 43.0
+        var lng = -3.0
 
-        expect(latLng.lat()).toEqual(43.0)
-        expect(latLng.lng()).toEqual(-3.0)
+        it("can be created directly", function () {
+            var latLng = new ign.LatLng(lat, lng)
+
+            expectLatLngToHaveGivenCoord(latLng)
+        })
+
+        it("can be created via factory", function () {
+            var latLng = new ign.LatLng.createForLatLng(lat, lng)
+
+            expectLatLngToHaveGivenCoord(latLng)
+        })
+
+        function expectLatLngToHaveGivenCoord(latLng) {
+            expect(latLng.lat()).toEqual(lat)
+            expect(latLng.lng()).toEqual(lng)
+        }
+
+        it("can be created as a copy of GMaps lat-lng", function () {
+            var gmLatLng = new gm.LatLng(lat, lng)
+
+            var ignLatLng = ign.LatLng.createCopyFromLatLng(gmLatLng)
+
+            expect(ignLatLng.constructor).toEqual(ign.LatLng)
+            expect(ignLatLng).toEqualToLatLngWithDelta(gmLatLng, 0)
+        })
+
+        it("is interchangeable with GMaps lat-lng and vice-versa", function () {
+            var gmLatLng = new gm.LatLng(lat, lng)
+            var ignLatLng = new ign.LatLng(lat, lng)
+
+            expect(ignLatLng.equals(gmLatLng)).toBeTruthy()
+            expect(gmLatLng.equals(ignLatLng)).toBeTruthy()
+        })
     })
 
-    it("can be created from GMaps lat-lng", function () {
-        var gmLatLng = new gm.LatLng(43.0, -3.0)
-
-        var ignLatLng = ign.LatLng.createFromLatLng(gmLatLng)
-
-        expect(ignLatLng.constructor).toEqual(ign.LatLng)
-        expect(ignLatLng).toEqualToLatLngWithDelta(gmLatLng, 0)
-    })
-
-    it("is interchangeable with GMaps lat-lng and vice-versa", function () {
-        var gmLatLng = new gm.LatLng(43.0, -3.0)
-        var ignLatLng = new ign.LatLng(43.0, -3.0)
-
-        expect(ignLatLng.equals(gmLatLng)).toBeTruthy()
-        expect(gmLatLng.equals(ignLatLng)).toBeTruthy()
-    })
-
-    context("in an UTM zone", function () {
+    context("in a UTM zone", function () {
         ign.spec.pointsWithinSpainUtmZones.each(function(point) {
             it("converts to UTM", function() {
                 expect(point.latLng.toUtm(point.utm.zone())).toEqualToUtmWithDelta(point.utm, 0.1)

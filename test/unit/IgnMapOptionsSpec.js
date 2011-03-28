@@ -36,12 +36,13 @@ describe("IgnMapOptions", function() {
     context("with tile scale for the base zoom level", function() {
         var tileScaleForBaseZoom = 256
 
-        context("for an UTM zone", function() {
+        context("for a UTM zone", function() {
             var utmZone = 30
 
-            // TODO rename context (GMaps world origin)
             context("the most upper left pixel of the origin tile corresponds to the Google Maps world origin", function() {
                 var originTileLatLng = new gm.LatLng(44.0, -7.0)
+                var originIgnX = 2
+                var originIgnY = 74
 
                 context("is configured with an IGN map type for every zoom level", function () {
                     var ignMaps = [ign.MAP_TYPES.TOPO_1000, ign.MAP_TYPES.TOPO_200,
@@ -50,7 +51,7 @@ describe("IgnMapOptions", function() {
                     var mapOptions
 
                     beforeEach(function() {
-                        originTile = new ign.Tile(2, 74, tileScaleForBaseZoom, utmZone)
+                        originTile = new ign.Tile(originIgnX, originIgnY, tileScaleForBaseZoom, utmZone)
                         spyOn(ign.Tile, "createForLatLng").andReturn(originTile)
 
                         mapOptions = new IgnMapOptions({
@@ -69,7 +70,7 @@ describe("IgnMapOptions", function() {
 
                     context("on a zoom level", function() {
                         var tiles = [
-                            new ign.Tile(2, 74, 256, utmZone),
+                            new ign.Tile(originIgnX, originIgnY, tileScaleForBaseZoom, utmZone),
                             new ign.Tile(4, 149, 128, utmZone),
                             new ign.Tile(8, 299, 64, utmZone),
                             new ign.Tile(16, 597, 32, utmZone)

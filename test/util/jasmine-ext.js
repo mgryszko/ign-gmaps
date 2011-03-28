@@ -5,11 +5,24 @@ function equalsWithDelta(actual, expected, delta) {
 }
 
 function toEqualToUtmWithDelta(expected, delta) {
+    this.message = function () {
+        return "Expected a Utm " + expected.toString() +
+                " to equal to Utm " + this.actual.toString() +
+                " with delta " + delta
+    }
+
     return equalsWithDelta(this.actual.x(), expected.x(), delta) &&
-            equalsWithDelta(this.actual.y(), expected.y(), delta)
+            equalsWithDelta(this.actual.y(), expected.y(), delta) &&
+            this.actual.zone() == expected.zone()
 }
 
 function toEqualToLatLngWithDelta(expected, delta) {
+    this.message = function () {
+        return "Expected a LatLng " + expected.toString() +
+                " to equal to LatLng " + this.actual.toString() +
+                " with delta " + delta
+    }
+
     return equalsWithDelta(this.actual.lat(), expected.lat(), delta) &&
             equalsWithDelta(this.actual.lng(), expected.lng(), delta)
 }
@@ -35,4 +48,3 @@ function toEqualToTile(expected) {
             (this.actual.scale() == expected.scale()) &&
             (this.actual.utmZone() == expected.utmZone())
 }
-

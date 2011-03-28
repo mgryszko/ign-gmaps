@@ -9,7 +9,7 @@ describe("IgnProjection with the default lat-lng to UTM converter", function() {
     context("with tile scale for the base zoom level", function() {
         var tileScaleForBaseZoom = 256
 
-        context("for an UTM zone", function() {
+        context("for a UTM zone", function() {
             var utmZone = 30
 
             context("the most upper left pixel of the origin tile corresponds to the Google Maps world origin", function() {

@@ -1,4 +1,4 @@
-Proj4js.defs["EPSG:4258"] = "+proj=longlat +ellps=GRS80 +no_defs" //lat/lon with ETRS89 datum
+Proj4js.defs["EPSG:4258"] = "+proj=longlat +ellps=GRS80 +no_defs" //lat-lng with ETRS89 datum
 Proj4js.defs["EPSG:3039"] = "+proj=utm +zone=27 +ellps=GRS80 +units=m +no_defs" //UTM 27N with ETRS89 datum
 Proj4js.defs["EPSG:3040"] = "+proj=utm +zone=28 +ellps=GRS80 +units=m +no_defs" //UTM 28N with ETRS89 datum
 Proj4js.defs["EPSG:3041"] = "+proj=utm +zone=29 +ellps=GRS80 +units=m +no_defs" //UTM 29N with ETRS89 datum
@@ -30,10 +30,18 @@ ign.Utm = function(x, y, zone) {
     this.zone = function() { return zone }
 }
 
+ign.Utm.prototype.toString = function() {
+    return "(" + this.x() + ", " + this.y() + ") " + this.zone() + "N"
+}
+
+ign.Utm.createForXYAndZone = function(x, y, zone) {
+    return new ign.Utm(x, y, zone)
+}
+
 ign.Utm.prototype.toLatLng = function() {
     var point = new Proj4js.Point(this.x(), this.y())
     Proj4js.transform(ign.UTM_PROJECTIONS[this.zone()], ign.ETRS_PROJECTION, point)    
-    return new gm.LatLng(point.y, point.x)
+    return ign.LatLng.createForLatLng(point.y, point.x)
 }
 
 
@@ -43,7 +51,11 @@ ign.LatLng = function(lat, lng) {
 ign.LatLng.prototype = new gm.LatLng()
 ign.LatLng.prototype.constructor = ign.LatLng
 
-ign.LatLng.createFromLatLng = function(source) {
+ign.LatLng.createForLatLng = function(lat, lng) {
+    return new ign.LatLng(lat, lng)
+}
+
+ign.LatLng.createCopyFromLatLng = function(source) {
     return new ign.LatLng(source.lat(), source.lng())
 }
 
@@ -51,7 +63,7 @@ ign.LatLng.prototype.toUtm = function(utmZone) {
     var point = new Proj4js.Point(this.lng(), this.lat())
     Proj4js.transform(ign.ETRS_PROJECTION, ign.UTM_PROJECTIONS[utmZone], point)
 
-    return new ign.Utm(point.x, point.y)
+    return ign.Utm.createForXYAndZone(point.x, point.y, utmZone)
 }
 
 
@@ -65,7 +77,7 @@ ign.Tile = function(x, y, scale, utmZone) {
 ign.Tile.SIZE_IN_PX = 256
 
 ign.Tile.createForLatLng = function(latLng, scale, utmZone) {
-    var utm = ign.LatLng.createFromLatLng(latLng).toUtm(utmZone)
+    var utm = ign.LatLng.createCopyFromLatLng(latLng).toUtm(utmZone)
 
     return new ign.Tile(
         Math.floor(utm.x() / (scale * ign.Tile.SIZE_IN_PX)),
@@ -74,10 +86,15 @@ ign.Tile.createForLatLng = function(latLng, scale, utmZone) {
     )
 }
 
+ign.Tile.prototype.toString = function() {
+    return "(" + this.x() + ", " + this.y() + ") " + this.scale() + " m/px " + this.utmZone() + "N"
+}
+
 ign.Tile.prototype.upperLeftPixelUtm = function() {
-    return new ign.Utm(
+    return ign.Utm.createForXYAndZone(
         this.x() * this.scale() * ign.Tile.SIZE_IN_PX,
-        (this.y() + 1) * this.scale() * ign.Tile.SIZE_IN_PX
+        (this.y() + 1) * this.scale() * ign.Tile.SIZE_IN_PX,
+        this.utmZone()
     )
 }
 
@@ -99,10 +116,6 @@ ign.Tile.prototype.moveBy = function(deltaX, deltaY) {
     return new ign.Tile(this.x() + deltaX, this.y() + deltaY, this.scale(), this.utmZone())
 }
 
-ign.Tile.prototype.toString = function() {
-    return "(" + this.x() + ", " + this.y() + ") " + this.scale() + " m/px " + this.utmZone() + "N" 
-}
-
 
 function IgnProjection(config) {
     var utmZone = config.utmZone
@@ -115,7 +128,7 @@ function IgnProjection(config) {
     }()
 
     this.fromLatLngToPoint = function(latLng) {
-        var utm = ign.LatLng.createFromLatLng(latLng).toUtm(utmZone)
+        var utm = ign.LatLng.createCopyFromLatLng(latLng).toUtm(utmZone)
         return new gm.Point(
             (utm.x() - originUtm.x()) / tileScaleForBaseZoom,
             (originUtm.y() - utm.y()) / tileScaleForBaseZoom
@@ -123,7 +136,7 @@ function IgnProjection(config) {
     }
 
     this.fromPointToLatLng = function(worldPoint) {
-        var utm = new ign.Utm(
+        var utm = ign.Utm.createForXYAndZone(
             worldPoint.x * tileScaleForBaseZoom + originUtm.x(),
             originUtm.y() - worldPoint.y * tileScaleForBaseZoom,
             utmZone

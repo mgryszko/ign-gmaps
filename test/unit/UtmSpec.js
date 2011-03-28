@@ -1,19 +1,42 @@
 describe("Utm", function() {
     beforeEach(function() {
         this.addMatchers({
-            toEqualToLatLngWithDelta: toEqualToLatLngWithDelta
+            toEqualToLatLngWithDelta: toEqualToLatLngWithDelta,
+            toEqualToUtmWithDelta: toEqualToUtmWithDelta
         })
     })
 
-    it("can be created with planar coordinates and zone", function () {
-        var utm = new ign.Utm(500000, 4300000, 30)
+    context("given planar coordinates and a UTM zone", function () {
+        var x = 500000
+        var y = 4300000
+        var zone = 30
 
-        expect(utm.x()).toEqual(500000)
-        expect(utm.y()).toEqual(4300000)
-        expect(utm.zone()).toEqual(30)
+        it("can be created directly", function () {
+            var utm = new ign.Utm(x, y, zone)
+
+            expectUtmToHaveGivenCoordAndZone(utm)
+        })
+
+        it("can be created via factory", function () {
+            var utm = ign.Utm.createForXYAndZone(x, y, zone)
+
+            expectUtmToHaveGivenCoordAndZone(utm)
+        })
+
+        function expectUtmToHaveGivenCoordAndZone(utm) {
+            expect(utm.x()).toEqual(x)
+            expect(utm.y()).toEqual(y)
+            expect(utm.zone()).toEqual(zone)
+        }
     })
 
-    context("in an UTM zone", function () {
+    it("describes itself", function () {
+        var utm = ign.Utm.createForXYAndZone(1, 2, 30)
+
+        expect(utm.toString()).toEqual("(1, 2) 30N")
+    })
+
+    context("in a UTM zone", function () {
         ign.spec.pointsWithinSpainUtmZones.each(function(point) {
             it("converts to lat-lng", function() {
                 expect(point.utm.toLatLng()).toEqualToLatLngWithDelta(point.latLng, 0.000001)

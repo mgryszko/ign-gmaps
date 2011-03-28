@@ -9,18 +9,18 @@ describe("IgnProjection", function() {
     context("with tile scale for the base zoom level", function() {
         var tileScale = 256
 
-        context("for an UTM zone", function() {
+        context("for a UTM zone", function() {
             var utmZone = 30
 
             context("the most upper left pixel of the origin tile corresponds to the Google Maps world origin", function() {
                 var originTileLatLng = new gm.LatLng(44.0, -7.0)
-
                 var projection
 
                 beforeEach(function() {
                     var originTile = new ign.Tile(2, 74, tileScale, utmZone)
                     spyOn(ign.Tile, "createForLatLng").andReturn(originTile)
-                    spyOn(originTile, "upperLeftPixelUtm").andReturn(new ign.Utm(131072, 4915200))
+                    var originUtm = new ign.Utm(131072, 4915200, utmZone)
+                    spyOn(originTile, "upperLeftPixelUtm").andReturn(originUtm)
 
                     projection = new IgnProjection({
                         tileScaleForBaseZoom: tileScale,
@@ -32,30 +32,30 @@ describe("IgnProjection", function() {
                 })
 
                 it("maps a lan-lng east and south from the origin tile to a world point with positive coordinates", function() {
-                    testLatLngToPoint(new gm.LatLng(43.0, -3.0), new ign.Utm(500000, 4760814.796173, utmZone),
-                            new gm.Point(1441.125, 603.067202))
+                    testLatLngToPoint(new gm.LatLng(43.0, -3.0), new ign.Utm(500000, 4760814.8, utmZone),
+                            new gm.Point(1441.125, 603.067188))
                 })
 
                 it("negative world coordinates are possible", function() {
-                    testLatLngToPoint(new gm.LatLng(44.296377, -7.624554), new ign.Utm(131071, 4915201, utmZone),
+                    testLatLngToPoint(new gm.LatLng(44.3, -7.62), new ign.Utm(131071, 4915201, utmZone),
                             new gm.Point(-0.003906, -0.003906))
                 })
 
                 function testLatLngToPoint(latLng, utm, expWorldPoint) {
                     var ignLatLng = jasmine.createSpyObj(ign.LatLng, ["toUtm"])
-                    spyOn(ign.LatLng, "createFromLatLng").andReturn(ignLatLng)
+                    spyOn(ign.LatLng, "createCopyFromLatLng").andReturn(ignLatLng)
                     ignLatLng.toUtm.andReturn(utm)
 
                     var worldPoint = projection.fromLatLngToPoint(latLng)
 
                     expect(worldPoint).toEqualToPointWithDelta(expWorldPoint, 0.000001)
-                    expect(ign.LatLng.createFromLatLng).toHaveBeenCalledWith(latLng)
+                    expect(ign.LatLng.createCopyFromLatLng).toHaveBeenCalledWith(latLng)
                     expect(ignLatLng.toUtm).toHaveBeenCalledWith(utm.zone())
                 }
 
                 it("1 tile pixel corresponds to 1 world point", function() {
                     var ignLatLng = jasmine.createSpyObj(ign.LatLng, ["toUtm"])
-                    spyOn(ign.LatLng, "createFromLatLng").andReturn(ignLatLng)
+                    spyOn(ign.LatLng, "createCopyFromLatLng").andReturn(ignLatLng)
                     var dummyLatLng = new gm.LatLng(0, 0)
                     var utm = new ign.Utm(131072, 4915200)
                     var utmOnePxAway = new ign.Utm(utm.x() + tileScale, utm.y() + tileScale)
@@ -70,9 +70,13 @@ describe("IgnProjection", function() {
                 })
 
                 it("maps a world point with positive coordinates to lat-lng east and south from the origin tile", function() {
-                    var latLng = projection.fromPointToLatLng(new gm.Point(1441, 603))
+                    var utm = new ign.Utm(499968, 4760832, utmZone)
+                    spyOn(ign.Utm, "createForXYAndZone").andReturn(utm)
+                    var latLng = new gm.LatLng(43.0, -3.0)
+                    spyOn(utm, "toLatLng").andReturn(latLng)
 
-                    expect(latLng).toEqualToLatLngWithDelta(new gm.LatLng(43.000155, -3.000393), 0.000001)
+                    expect(projection.fromPointToLatLng(new gm.Point(1441, 603))).toEqualToLatLngWithDelta(latLng, 0.000001)
+                    expect(ign.Utm.createForXYAndZone).toHaveBeenCalledWith(utm.x(), utm.y(), utm.zone())
                 })
             })
         })

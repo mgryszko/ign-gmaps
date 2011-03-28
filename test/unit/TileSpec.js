@@ -19,19 +19,23 @@ describe("Tile", function() {
 
     it("can be created with scale and UTM zone from lat-lng", function () {
         var ignLatLng = jasmine.createSpyObj(ign.LatLng, ["toUtm"])
-        spyOn(ign.LatLng, "createFromLatLng").andReturn(ignLatLng)
+        spyOn(ign.LatLng, "createCopyFromLatLng").andReturn(ignLatLng)
         ignLatLng.toUtm.andReturn(new ign.Utm(179294.18, 4879655.84, utmZone))
 
         var latLng = new gm.LatLng(44.0, -7.0)
 
         expect(ign.Tile.createForLatLng(latLng, scale, utmZone)).toEqualToTile(new ign.Tile(2, 74, scale, utmZone))
 
-        expect(ign.LatLng.createFromLatLng).toHaveBeenCalledWith(latLng)
+        expect(ign.LatLng.createCopyFromLatLng).toHaveBeenCalledWith(latLng)
         expect(ignLatLng.toUtm).toHaveBeenCalledWith(utmZone)
     })
 
+    it("describes itself", function () {
+        expect(tile.toString()).toEqual("(2, 74) 256 m/px 30N")
+    })
+
     it("calculates UTM of the upper left pixel", function () {
-        expect(tile.upperLeftPixelUtm()).toEqualToUtmWithDelta(new ign.Utm(131072, 4915200), 0)
+        expect(tile.upperLeftPixelUtm()).toEqualToUtmWithDelta(new ign.Utm(131072, 4915200, utmZone), 0)
     })
 
     context("for a GMaps zoom", function () {
@@ -42,7 +46,6 @@ describe("Tile", function() {
             8: new ign.Tile(512, 19199, 1, utmZone)
         }
 
-        // TODO must it be a hash?
         $H(expTilesForZoom).keys().each(function(zoom) {
             it("spawns a tile having same upper pixel UTM", function () {
                 expect(tile.spawnTileForGMapsZoom(zoom)).toEqualToTile(expTilesForZoom[zoom])
@@ -52,9 +55,5 @@ describe("Tile", function() {
 
     it("can be moved by delta coordinates yielding a new tile that maintains the scale and UTM zone", function () {
         expect(tile.moveBy(1, -1)).toEqualToTile(new ign.Tile(3, 73, scale, utmZone))
-    })
-
-    it("describes itself", function () {
-        expect(tile.toString()).toEqual("(2, 74) 256 m/px 30N")
     })
 })
