@@ -1,6 +1,4 @@
 describe("IgnMapFactory", function() {
-    var mapFactory = new ign.IgnMapFactory()
-
     var ImageMapType
 
     function ImageMapTypeSpy(options) {
@@ -28,7 +26,7 @@ describe("IgnMapFactory", function() {
             ignMaps: [ign.MAP_TYPES.TOPO_1000]
         }
 
-        var mapType = mapFactory.createMapType(config)
+        var mapType = ign.IgnMapFactory.createMapType(config)
         
         expect(mapType.options).toBeInstanceOf(ign.IgnMapOptions)
         expect(mapType.projection).toBeInstanceOf(ign.IgnProjection)

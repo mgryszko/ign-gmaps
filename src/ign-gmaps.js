@@ -168,12 +168,11 @@ ign.IgnMapOptions = function(config) {
     }
 }
 
-ign.IgnMapFactory = function() {
-    this.createMapType = function(config) {
-        var mapOptions = new ign.IgnMapOptions(config)
-        var mapType = new gm.ImageMapType(mapOptions)
-        mapType.projection = new ign.IgnProjection(config)
+ign.IgnMapFactory = {}
+ign.IgnMapFactory.createMapType = function(config) {
+    var mapOptions = new ign.IgnMapOptions(config)
+    var mapType = new gm.ImageMapType(mapOptions)
+    mapType.projection = new ign.IgnProjection(config)
 
-        return mapType
-    }
+    return mapType
 }
