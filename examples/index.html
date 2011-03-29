@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no"/>
+    <link rel="stylesheet" type="text/css" href="css/reset.css"/>
+    <link rel="stylesheet" type="text/css" href="css/ign-gmaps.css"/>
+</head>
+<body>
+<div id="map_viewport"/>
+<script src="http://maps.google.com/maps/api/js?sensor=false"></script>
+<script src="../lib/proj4js.js"></script>
+<script src="../src/ign-gmaps.js"></script>
+<script>
+    window.onload = function() {
+        var config = {
+            tileScaleForBaseZoom: 256,
+            utmZone: 30,
+            originTileLatLng: new gm.LatLng(44.0, -7.0),
+            ignMaps: [
+                ign.MAP_TYPES.TOPO_1000, ign.MAP_TYPES.TOPO_1000,
+                ign.MAP_TYPES.TOPO_200, ign.MAP_TYPES.TOPO_200,
+                ign.MAP_TYPES.TOPO_50, ign.MAP_TYPES.TOPO_50,
+                ign.MAP_TYPES.TOPO_25, ign.MAP_TYPES.TOPO_25, ign.MAP_TYPES.TOPO_25
+            ]
+        }
+
+        var ignMapType = ign.IgnMapFactory.createMapType(config)
+
+        var map = new google.maps.Map(document.getElementById("map_viewport"))
+        map.setCenter(new google.maps.LatLng(43.0, -3.0))
+        map.setZoom(0)
+        map.mapTypes.set("ignMap", ignMapType)
+        map.setMapTypeId("ignMap")
+        map.overlayMapTypes.insertAt(0, ignMapType)
+
+        var marker = new google.maps.Marker({
+            position: new google.maps.LatLng(43.0, -3.0),
+            map: map,
+            title:"Hello World!"
+        })
+    }
+</script>
+</body>
+</html>
