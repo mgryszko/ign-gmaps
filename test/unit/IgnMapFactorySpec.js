@@ -1,5 +1,5 @@
 describe("IgnMapFactory", function() {
-    var mapFactory = new IgnMapFactory()
+    var mapFactory = new ign.IgnMapFactory()
 
     var ImageMapType
 
@@ -30,8 +30,8 @@ describe("IgnMapFactory", function() {
 
         var mapType = mapFactory.createMapType(config)
         
-        expect(mapType.options).toBeInstanceOf(IgnMapOptions)
-        expect(mapType.projection).toBeInstanceOf(IgnProjection)
+        expect(mapType.options).toBeInstanceOf(ign.IgnMapOptions)
+        expect(mapType.projection).toBeInstanceOf(ign.IgnProjection)
     })
 })
 

@@ -116,8 +116,8 @@ ign.Tile.prototype.moveBy = function(deltaX, deltaY) {
     return new ign.Tile(this.x() + deltaX, this.y() + deltaY, this.scale(), this.utmZone())
 }
 
-// TODO move to ign namespace
-function IgnProjection(config) {
+
+ign.IgnProjection = function(config) {
     var utmZone = config.utmZone
     var originTileLatLng = config.originTileLatLng
     var tileScaleForBaseZoom = config.tileScaleForBaseZoom
@@ -145,8 +145,8 @@ function IgnProjection(config) {
     }
 }
 
-// TODO move to ign namespace
-function IgnMapOptions(config) {
+
+ign.IgnMapOptions = function(config) {
     var utmZone = config.utmZone
     var originTileLatLng = config.originTileLatLng
     var tileScaleForBaseZoom = config.tileScaleForBaseZoom
@@ -168,12 +168,11 @@ function IgnMapOptions(config) {
     }
 }
 
-// TODO move to ign namespace
-function IgnMapFactory() {
+ign.IgnMapFactory = function() {
     this.createMapType = function(config) {
-        var mapOptions = new IgnMapOptions(config)
+        var mapOptions = new ign.IgnMapOptions(config)
         var mapType = new gm.ImageMapType(mapOptions)
-        mapType.projection = new IgnProjection(config)
+        mapType.projection = new ign.IgnProjection(config)
 
         return mapType
     }

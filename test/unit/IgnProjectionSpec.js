@@ -21,7 +21,7 @@ describe("IgnProjection", function() {
                     var originUtm = new ign.Utm(131072, 4915200, utmZone)
                     originTile.upperLeftPixelUtm.andReturn(originUtm)
 
-                    projection = new IgnProjection({
+                    projection = new ign.IgnProjection({
                         tileScaleForBaseZoom: tileScale,
                         utmZone: utmZone,
                         originTileLatLng: originTileLatLng

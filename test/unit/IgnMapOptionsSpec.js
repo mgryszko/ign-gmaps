@@ -15,7 +15,7 @@ describe("IgnMapOptions", function() {
         beforeEach(function() {
             ign.Tile.spyOnCreateForLatLng()
 
-            mapOptions = new IgnMapOptions(dummyConfig)
+            mapOptions = new ign.IgnMapOptions(dummyConfig)
         })
 
         it("has a minimum zoom level equal to the base zoom level", function() {
@@ -52,7 +52,7 @@ describe("IgnMapOptions", function() {
                     beforeEach(function() {
                         originTile = ign.Tile.spyOnCreateForLatLng()
 
-                        mapOptions = new IgnMapOptions({
+                        mapOptions = new ign.IgnMapOptions({
                             tileScaleForBaseZoom: tileScaleForBaseZoom,
                             utmZone: utmZone,
                             originTileLatLng: originTileLatLng,
