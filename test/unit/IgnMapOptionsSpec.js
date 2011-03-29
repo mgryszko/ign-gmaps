@@ -13,8 +13,7 @@ describe("IgnMapOptions", function() {
         var mapOptions
 
         beforeEach(function() {
-            var dummyOriginTile = new ign.Tile(2, 74)
-            spyOn(ign.Tile, "createForLatLng").andReturn(dummyOriginTile)
+            ign.Tile.spyOnCreateForLatLng()
 
             mapOptions = new IgnMapOptions(dummyConfig)
         })
@@ -51,8 +50,7 @@ describe("IgnMapOptions", function() {
                     var mapOptions
 
                     beforeEach(function() {
-                        originTile = new ign.Tile(originIgnX, originIgnY, tileScaleForBaseZoom, utmZone)
-                        spyOn(ign.Tile, "createForLatLng").andReturn(originTile)
+                        originTile = ign.Tile.spyOnCreateForLatLng()
 
                         mapOptions = new IgnMapOptions({
                             tileScaleForBaseZoom: tileScaleForBaseZoom,
@@ -61,7 +59,7 @@ describe("IgnMapOptions", function() {
                             ignMaps: ignMaps
                         })
 
-                        expect(ign.Tile.createForLatLng).toHaveBeenCalledWith(originTileLatLng, tileScaleForBaseZoom, utmZone)
+                        ign.Tile.expectCreateForLatLngCalledWith(originTileLatLng, tileScaleForBaseZoom, utmZone)
                     })
 
                     it("has a maximum zoom level", function() {
@@ -79,9 +77,9 @@ describe("IgnMapOptions", function() {
 
                         $R(0, maxZoom).each(function(zoom) {
                             it("creates the tile URL for the Google Maps world origin", function() {
-                                var originTileForGMapsZoom = new ign.Tile()
-                                spyOn(originTile, "spawnTileForGMapsZoom").andReturn(originTileForGMapsZoom)
-                                spyOn(originTileForGMapsZoom, "moveBy").andReturn(tiles[zoom])
+                                var originTileForGMapsZoom = jasmine.createSpyObj(ign.Tile, ["moveBy"])
+                                originTile.spawnTileForGMapsZoom.andReturn(originTileForGMapsZoom)
+                                originTileForGMapsZoom.moveBy.andReturn(tiles[zoom])
                                 var tileCoord = new gm.Point(0, 0)
 
                                 var url = mapOptions.getTileUrl(tileCoord, zoom)

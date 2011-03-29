@@ -23,3 +23,36 @@ ign.spec.pointsOnSpainBoundsOutsize30NZone = [
 ]
 
 ign.spec.pointsOnSpainBounds = ign.spec.pointsOnSpainBounds30NZoneLimit.concat(ign.spec.pointsOnSpainBoundsOutsize30NZone)
+
+ign.LatLng.spyOnCopy = function() {
+    var copy = jasmine.createSpyObj(ign.LatLng, ["toUtm"])
+    spyOn(ign.LatLng, "copy").andReturn(copy)
+
+    return copy
+}
+
+ign.LatLng.expectCopyCalledWith = function(original) {
+    expect(ign.LatLng.copy).toHaveBeenCalledWith(original)
+}
+
+ign.Utm.spyOnCreateForXYAndZone = function() {
+    var utm = jasmine.createSpyObj(ign.Utm, ["toLatLng"])
+    spyOn(ign.Utm, "createForXYAndZone").andReturn(utm)
+
+    return utm
+}
+
+ign.Utm.expectCreateForXYAndZoneCalledWith = function(x, y, zone) {
+    expect(ign.Utm.createForXYAndZone).toHaveBeenCalledWith(x, y, zone)
+}
+
+ign.Tile.spyOnCreateForLatLng = function() {
+    var tile = jasmine.createSpyObj(ign.Tile, ["upperLeftPixelUtm", "spawnTileForGMapsZoom"])
+    spyOn(ign.Tile, "createForLatLng").andReturn(tile)
+
+    return tile
+}
+
+ign.Tile.expectCreateForLatLngCalledWith = function(latLng, scale, utmZone) {
+    expect(ign.Tile.createForLatLng).toHaveBeenCalledWith(latLng, scale, utmZone)
+}

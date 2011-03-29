@@ -18,15 +18,14 @@ describe("Tile", function() {
     })
 
     it("can be created with scale and UTM zone from lat-lng", function () {
-        var ignLatLng = jasmine.createSpyObj(ign.LatLng, ["toUtm"])
-        spyOn(ign.LatLng, "createCopyFromLatLng").andReturn(ignLatLng)
+        var ignLatLng = ign.LatLng.spyOnCopy()
         ignLatLng.toUtm.andReturn(new ign.Utm(179294.18, 4879655.84, utmZone))
 
         var latLng = new gm.LatLng(44.0, -7.0)
 
         expect(ign.Tile.createForLatLng(latLng, scale, utmZone)).toEqualToTile(new ign.Tile(2, 74, scale, utmZone))
 
-        expect(ign.LatLng.createCopyFromLatLng).toHaveBeenCalledWith(latLng)
+        ign.LatLng.expectCopyCalledWith(latLng)
         expect(ignLatLng.toUtm).toHaveBeenCalledWith(utmZone)
     })
 

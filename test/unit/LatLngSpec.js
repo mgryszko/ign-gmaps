@@ -30,7 +30,7 @@ describe("ign.LatLng", function() {
         it("can be created as a copy of GMaps lat-lng", function () {
             var gmLatLng = new gm.LatLng(lat, lng)
 
-            var ignLatLng = ign.LatLng.createCopyFromLatLng(gmLatLng)
+            var ignLatLng = ign.LatLng.copy(gmLatLng)
 
             expect(ignLatLng.constructor).toEqual(ign.LatLng)
             expect(ignLatLng).toEqualToLatLngWithDelta(gmLatLng, 0)

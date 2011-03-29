@@ -55,7 +55,7 @@ ign.LatLng.createForLatLng = function(lat, lng) {
     return new ign.LatLng(lat, lng)
 }
 
-ign.LatLng.createCopyFromLatLng = function(source) {
+ign.LatLng.copy = function(source) {
     return new ign.LatLng(source.lat(), source.lng())
 }
 
@@ -77,7 +77,7 @@ ign.Tile = function(x, y, scale, utmZone) {
 ign.Tile.SIZE_IN_PX = 256
 
 ign.Tile.createForLatLng = function(latLng, scale, utmZone) {
-    var utm = ign.LatLng.createCopyFromLatLng(latLng).toUtm(utmZone)
+    var utm = ign.LatLng.copy(latLng).toUtm(utmZone)
 
     return new ign.Tile(
         Math.floor(utm.x() / (scale * ign.Tile.SIZE_IN_PX)),
@@ -116,7 +116,7 @@ ign.Tile.prototype.moveBy = function(deltaX, deltaY) {
     return new ign.Tile(this.x() + deltaX, this.y() + deltaY, this.scale(), this.utmZone())
 }
 
-
+// TODO move to ign namespace
 function IgnProjection(config) {
     var utmZone = config.utmZone
     var originTileLatLng = config.originTileLatLng
@@ -128,7 +128,7 @@ function IgnProjection(config) {
     }()
 
     this.fromLatLngToPoint = function(latLng) {
-        var utm = ign.LatLng.createCopyFromLatLng(latLng).toUtm(utmZone)
+        var utm = ign.LatLng.copy(latLng).toUtm(utmZone)
         return new gm.Point(
             (utm.x() - originUtm.x()) / tileScaleForBaseZoom,
             (originUtm.y() - utm.y()) / tileScaleForBaseZoom
@@ -145,6 +145,7 @@ function IgnProjection(config) {
     }
 }
 
+// TODO move to ign namespace
 function IgnMapOptions(config) {
     var utmZone = config.utmZone
     var originTileLatLng = config.originTileLatLng
@@ -167,6 +168,7 @@ function IgnMapOptions(config) {
     }
 }
 
+// TODO move to ign namespace
 function IgnMapFactory() {
     this.createMapType = function(config) {
         var mapOptions = new IgnMapOptions(config)

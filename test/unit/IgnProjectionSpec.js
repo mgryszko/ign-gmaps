@@ -17,10 +17,9 @@ describe("IgnProjection", function() {
                 var projection
 
                 beforeEach(function() {
-                    var originTile = new ign.Tile(2, 74, tileScale, utmZone)
-                    spyOn(ign.Tile, "createForLatLng").andReturn(originTile)
+                    var originTile = ign.Tile.spyOnCreateForLatLng()
                     var originUtm = new ign.Utm(131072, 4915200, utmZone)
-                    spyOn(originTile, "upperLeftPixelUtm").andReturn(originUtm)
+                    originTile.upperLeftPixelUtm.andReturn(originUtm)
 
                     projection = new IgnProjection({
                         tileScaleForBaseZoom: tileScale,
@@ -28,7 +27,7 @@ describe("IgnProjection", function() {
                         originTileLatLng: originTileLatLng
                     })
 
-                    expect(ign.Tile.createForLatLng).toHaveBeenCalledWith(originTileLatLng, tileScale, utmZone)
+                    ign.Tile.expectCreateForLatLngCalledWith(originTileLatLng, tileScale, utmZone)
                 })
 
                 it("maps a lan-lng east and south from the origin tile to a world point with positive coordinates", function() {
@@ -42,20 +41,18 @@ describe("IgnProjection", function() {
                 })
 
                 function testLatLngToPoint(latLng, utm, expWorldPoint) {
-                    var ignLatLng = jasmine.createSpyObj(ign.LatLng, ["toUtm"])
-                    spyOn(ign.LatLng, "createCopyFromLatLng").andReturn(ignLatLng)
+                    var ignLatLng = ign.LatLng.spyOnCopy()
                     ignLatLng.toUtm.andReturn(utm)
 
                     var worldPoint = projection.fromLatLngToPoint(latLng)
 
                     expect(worldPoint).toEqualToPointWithDelta(expWorldPoint, 0.000001)
-                    expect(ign.LatLng.createCopyFromLatLng).toHaveBeenCalledWith(latLng)
+                    ign.LatLng.expectCopyCalledWith(latLng)
                     expect(ignLatLng.toUtm).toHaveBeenCalledWith(utm.zone())
                 }
 
                 it("1 tile pixel corresponds to 1 world point", function() {
-                    var ignLatLng = jasmine.createSpyObj(ign.LatLng, ["toUtm"])
-                    spyOn(ign.LatLng, "createCopyFromLatLng").andReturn(ignLatLng)
+                    var ignLatLng = ign.LatLng.spyOnCopy()
                     var dummyLatLng = new gm.LatLng(0, 0)
                     var utm = new ign.Utm(131072, 4915200)
                     var utmOnePxAway = new ign.Utm(utm.x() + tileScale, utm.y() + tileScale)
@@ -70,13 +67,12 @@ describe("IgnProjection", function() {
                 })
 
                 it("maps a world point with positive coordinates to lat-lng east and south from the origin tile", function() {
-                    var utm = new ign.Utm(499968, 4760832, utmZone)
-                    spyOn(ign.Utm, "createForXYAndZone").andReturn(utm)
+                    var utm = ign.Utm.spyOnCreateForXYAndZone()
                     var latLng = new gm.LatLng(43.0, -3.0)
-                    spyOn(utm, "toLatLng").andReturn(latLng)
+                    utm.toLatLng.andReturn(latLng)
 
                     expect(projection.fromPointToLatLng(new gm.Point(1441, 603))).toEqualToLatLngWithDelta(latLng, 0.000001)
-                    expect(ign.Utm.createForXYAndZone).toHaveBeenCalledWith(utm.x(), utm.y(), utm.zone())
+                    ign.Utm.expectCreateForXYAndZoneCalledWith(499968, 4760832, utmZone)
                 })
             })
         })
