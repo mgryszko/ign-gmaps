@@ -28,13 +28,13 @@ How to use the library?
 
  * Use ign.IgnMapFactory to create an IGN map layer. It will provide a custom ImageMapType together with MapOptions and Projection implementation:
 
-     var ignMapType = ign.IgnMapFactory.createMapType(config)
-     var map = new google.maps.Map(document.getElementById("map_viewport"))
-     map.setCenter(new google.maps.LatLng(43.0, -3.0))
-     map.setZoom(0)
-     map.mapTypes.set("ignMap", ignMapType)
-     map.setMapTypeId("ignMap")
-     map.overlayMapTypes.insertAt(0, ignMapType)
+       var ignMapType = ign.IgnMapFactory.createMapType(config)
+       var map = new google.maps.Map(document.getElementById("map_viewport"))
+       map.setCenter(new google.maps.LatLng(43.0, -3.0))
+       map.setZoom(0)
+       map.mapTypes.set("ignMap", ignMapType)
+       map.setMapTypeId("ignMap")
+       map.overlayMapTypes.insertAt(0, ignMapType)
 
 Notes
 ====
