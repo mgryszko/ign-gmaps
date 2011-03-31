@@ -3,9 +3,9 @@ How to use the library?
 
  * Include ign-maps.js and proj4js.js in your project.
 
- You find an uncompressed and unobfuscated Proj4js version in the GitHub repository. A compressed and obfuscated one can be downloaded from  http://trac.osgeo.org/proj4js/wiki/Download
+ You find an uncompressed and unobfuscated Proj4js version in the GitHub repository. A compressed and obfuscated one can be downloaded from <http://trac.osgeo.org/proj4js/wiki/Download>
 
- * Make sure you are familiar with the Custom Map chapter of the Google Maps API Developer Guide (http://code.google.com/apis/maps/documentation/javascript/maptypes.html#CustomMapTypes)
+ * Make sure you are familiar with the Custom Map chapter of the Google Maps API Developer Guide (<http://code.google.com/apis/maps/documentation/javascript/maptypes.html#CustomMapTypes>)
 
  * Configure the IGN map:
 
