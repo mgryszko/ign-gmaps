@@ -9,7 +9,7 @@ How to use the library?
 
  * Configure the IGN map:
 
-     var config = {
+      var config = {
          tileScaleForBaseZoom: 256, // in meters/pixel for the zoom 0. Must be a power of 2. Valid scale range: 1 - 2048.
          utmZone: 30, // continental Spain: 29-31, Canary Island: 27-28
          originTileLatLng: new gm.LatLng(44.0, -7.0), // upper-left pixel of the tile covering these coordinates will become (0, 0) world point. Should lie withing the UTM zone or close to its boundaries. The farther it is from the boundaries, the bigger is the projection error
@@ -28,7 +28,7 @@ How to use the library?
 
  * Use ign.IgnMapFactory to create an IGN map layer. It will provide a custom ImageMapType together with MapOptions and Projection implementation:
 
-       var ignMapType = ign.IgnMapFactory.createMapType(config)
+      var ignMapType = ign.IgnMapFactory.createMapType(config)
        var map = new google.maps.Map(document.getElementById("map_viewport"))
        map.setCenter(new google.maps.LatLng(43.0, -3.0))
        map.setZoom(0)
